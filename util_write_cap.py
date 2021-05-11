@@ -175,13 +175,27 @@ def rotate2ENZ(stream, evname_key, isave_ENZ=True, icreateNull=False, ifverbose 
         dip2 = substr[1].stats.sac['cmpinc']
         dip3 = substr[2].stats.sac['cmpinc']
         if ifverbose:
-            print('R==>',substr[0].stats.channel, substr[0].stats.sac['cmpinc'], substr[0].stats.sac['cmpaz'], \
-                      substr[1].stats.channel, substr[1].stats.sac['cmpinc'],substr[1].stats.sac['cmpaz'], \
-                      substr[2].stats.channel, substr[2].stats.sac['cmpinc'], substr[2].stats.sac['cmpaz'])
+            #R==> BHE 0.0 90.0 BHN 0.0 0.0 BHZ -90.0 0.0
+            #--> Station DK.DAG..BH* Rotating random orientation to NEZ.
             print('--> Station ' + netw + '.' + station + '.' + location + '.' + chan +
                   ' Rotating random orientation to NEZ.')
+            print('R==>',
+                     substr[0].stats.channel, substr[0].stats.sac['cmpinc'], substr[0].stats.sac['cmpaz'], \
+                     substr[1].stats.channel, substr[1].stats.sac['cmpinc'], substr[1].stats.sac['cmpaz'], \
+                     substr[2].stats.channel, substr[2].stats.sac['cmpinc'], substr[2].stats.sac['cmpaz'])
 
-        data_array = rotate.rotate2zne(d1, az1, dip1, d2, az2, dip2, d3, az3, dip3)
+        # 2021-05-11 
+        # Not clear why some stations can't rotate.
+        # TODO  Find bug that crashes rotation for some stations. 
+        # Still clean up vipuls method.
+        # The rotation crashes often and breaks the downloading.
+        # Use `try` to recover and continue with other stations, but the issue still not resolved.
+        # It may be the dummy zeros created for the hirozontal components when station only has vertical component.
+        try:
+            data_array = rotate.rotate2zne(d1, az1, dip1, d2, az2, dip2, d3, az3, dip3)
+        except:
+            print ("ERROR: rotate.rotate2zne(...) failed, skipping...")
+            continue
 
         # Rotates an arbitrarily oriented three-component vector to ZNE( [0]-Z, [1]-N, [2]-E)
         # XXX: Check 012 in correct order? 
@@ -595,7 +609,20 @@ def add_sac_metadata(st, client_name="LLNL", ev=[], stalist=[], ifverbose=False,
                                 indx_end = (indx+1)*8
                                 header_tag = indx+3
                                 # print('-->', sensor[indx_start:indx_end])
-                                tr.stats.sac['kt'+str(header_tag)] = sensor[indx_start:indx_end]
+                                # 2021-05-11 some data from Iceland that stops the script.
+                                # Use `try` to recover and continue despite error.
+                                # Otherwise lots of already downloaded data (~1GB) is lost and this gets tricky when debugging an event.
+                                try:
+                                    tr.stats.sac['kt'+str(header_tag)] = sensor[indx_start:indx_end]
+                                except:
+                                    # "util_write_cap.py", line 598, in add_sac_metadata
+                                    # tr.stats.sac['kt'+str(header_tag)] = sensor[indx_start:indx_end]
+                                    # TypeError: 'NoneType' object is not subscriptable
+                                    tr.stats.sac['kt'+str(header_tag)] = 'N/A'
+                                    print('WARNING. Sensor = %s. Setting as N/A' % sensor)
+                                    print(stan)
+
+
         
         if phase_write:
             model = TauPyModel(model=taup_model)
@@ -847,8 +874,13 @@ def sta_limit_distance(ev, stations, min_dist=0, max_dist=100000,
         for sta in net:
             dist, az, baz = obspy.geodetics.gps2dist_azimuth(
                 elat, elon, sta.latitude, sta.longitude)
-            print(sta.code, elon, elat, sta.longitude, sta.latitude,
-                  dist / 1000)
+            #print(sta.code, elon, elat, sta.longitude, sta.latitude, dist / 1000)
+            # MEM 7.593 47.584 6.0067 50.6092 355.8013965842591
+            # UCC 7.593 47.584 4.36038 50.797241 427.9532077817836
+            # BRANT 7.593 47.584 6.47298 46.93801 111.099671250705
+
+            print("%8s %8.3f %8.3f event %8.3f %8.3f dist %7.2f" \
+                    % (sta.code, sta.longitude, sta.latitude, elon, elat, dist / 1000))
             f.write(outform % (sta.code, net.code, sta.latitude, 
                                sta.longitude, dist / 1000, az))
 
@@ -1295,7 +1327,7 @@ def resp_plot_remove(st, ipre_filt, pre_filt, iplot_response, water_level,
 
             try:
                 if ifverbose:
-                    print('%s: Plotting instrument response' % station_key)
+                    print('%s15: Plotting instrument response' % station_key)
                 tr.remove_response(inventory=stations, water_level=water_level, pre_filt=pre_filt, \
                         output=outformat, plot = resp_plot)
                 continue
@@ -1304,7 +1336,7 @@ def resp_plot_remove(st, ipre_filt, pre_filt, iplot_response, water_level,
         else:
             try:
                 if ifverbose:
-                    print('%s: Correcting instrument response, pre-filter %s' %\
+                    print('%15s: Correcting instrument response, pre-filter %s' %\
                               (station_key, pre_filt))
                 tr.remove_response(inventory=stations, water_level=water_level, pre_filt=pre_filt, \
                         output=outformat)
