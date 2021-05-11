@@ -100,8 +100,7 @@ if __name__ == '__main__':
 
         # Delete existing data directory
         # set ev_info.overwrite_ddir=false to extract data from multiple clients
-        ev_info.evname = util_helpers.otime2eid(
-            ev_info.ref_time_place.origins[0].time)
+        ev_info.evname = util_helpers.otime2eid(ev_info.ref_time_place.origins[0].time)
         ddir = './' + ev_info.evname
         if ev_info.overwrite_ddir and os.path.exists(ddir):
             print("\n*** WARNING *** . Deleted existing directory", ddir)
