@@ -186,10 +186,10 @@ def rotate2ENZ(stream, evname_key, isave_ENZ=True, icreateNull=False, ifverbose 
 
         # 2021-05-11 
         # Not clear why some stations can't rotate.
-        # Still cleaning up vipuls codes.
+        # TODO  Find bug that crashes rotation for some stations. 
+        # Still clean up vipuls method.
         # The rotation crashes often and breaks the downloading.
         # Use `try` to recover and continue with other stations, but the issue still not resolved.
-        # TODO  Find bug that crashes rotation for some stations. 
         # It may be the dummy zeros created for the hirozontal components when station only has vertical component.
         try:
             data_array = rotate.rotate2zne(d1, az1, dip1, d2, az2, dip2, d3, az3, dip3)

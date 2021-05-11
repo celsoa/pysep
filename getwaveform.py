@@ -194,9 +194,14 @@ class getwaveform:
         evtime = event.origins[0].time
         reftime = ref_time_place.origins[0].time
 
+        #-----------------------------------------------------------
+        # BEGIN OPTIONS MASS DOWNLOADER
         if self.ifmass_downloader is True:
-            domain = CircularDomain(latitude=self.elat, longitude=self.elon,
-                                    minradius=kilometer2degrees(self.min_dist), maxradius=kilometer2degrees(self.max_dist))
+            domain = CircularDomain(
+                    longitude=self.elon,
+                    latitude=self.elat, 
+                    minradius=kilometer2degrees(self.min_dist), 
+                    maxradius=kilometer2degrees(self.max_dist))
             
             restrictions = Restrictions(
                 starttime = reftime - self.tbefore_sec,
@@ -236,6 +241,8 @@ class getwaveform:
             t1s, t2s= get_phase_arrival_times(inventory,event,self.phases,
                                               self.phase_window,self.taupmodel,
                                               reftime,self.tbefore_sec,self.tafter_sec)
+        # END MASS DOWNLOADER
+        #-----------------------------------------------------------
 
         # Add deprecation warning
         if self.idb is not None:
