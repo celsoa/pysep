@@ -40,7 +40,7 @@ def get_ev_info(ev_info,iex):
 
         #ev_info.network = 'ZB'
         ev_info.channel = 'LH?,BH?,HH?'
-        ev_info.resample_freq = 50
+        ev_info.resample_freq = 20
         ev_info.scale_factor = 100
         #ev_info.phase_window = False
         #-------for specfem------------
@@ -70,8 +70,8 @@ def get_ev_info(ev_info,iex):
         # 2021-02-24T10:17:53.076 -22.32224 63.89646 4.862 4.56 4.53
         # 2021-02-24T10:27:59.639 -22.05429 63.91842 3.827 4.70 4.30
         data = np.genfromtxt(inputfile, 
-                dtype=(UTCDateTime, float, float, float, float, float), 
-                names="t, lon, lat, dep, mag, ml")
+                dtype = (UTCDateTime, float, float, float, float, float), 
+                names = "t, lon, lat, dep, mag, ml")
         otime = data['t']
         lon = data['lon']
         lat = data['lat']
@@ -105,5 +105,4 @@ def get_ev_info(ev_info,iex):
         ev_info = ev_info_list
         print(ev_info_list)
 
-    sys.exit()
     return(ev_info)
