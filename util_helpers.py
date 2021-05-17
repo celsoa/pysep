@@ -92,16 +92,36 @@ def get_inventory_from_xml(ddir):
     '''
     Return combined inventory multiple xml files 
     (created by mass downloader)
+
+2021-05-17 NOTE the whole getwaveform suite crashes because some xml files might be missing data.
+    Added try/except. But not sure if should add:
+        continue OR stninv = [] 
+---8<---8<---8<---
+  File "/home/calvizur/UTILS/anaconda3/envs/seis38/lib/python3.8/site-packages/obspy/core/inventory/response.py", line 296, in normalization_frequency
+    self._normalization_frequency = Frequency(value)
+  File "/home/calvizur/UTILS/anaconda3/envs/seis38/lib/python3.8/site-packages/obspy/core/util/obspy_types.py", line 237, in __new__
+    if not cls._minimum <= float(value) <= cls._maximum:
+TypeError: float() argument must be a string or a number, not 'NoneType'
     '''
 
     from obspy.core.inventory import Inventory
 
     inventory = Inventory(networks=[],source='ObsPy 1.0.3')
     #inventory = Inventory()
-
     for xmlfile in glob.iglob(ddir + '/*.xml'):
         stninv = obspy.read_inventory(xmlfile)
         inventory.networks.append(stninv[0])
         #inventory.__add__(stninv)
+
+    for xmlfile in glob.iglob(ddir + '/*.xml'):
+        try:
+            stninv = obspy.read_inventory(xmlfile)
+        except:
+            print(xmlfile)
+            #stninv = []
+            continue    # 2021-05-17 17:31 TEST1: USE CONTINUE
+        inventory.networks.append(stninv[0])
+        #inventory.__add__(stninv)
+
 
     return inventory
