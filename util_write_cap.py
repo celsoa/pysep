@@ -89,6 +89,9 @@ def rotate2ENZ(stream, evname_key, isave_ENZ=True, icreateNull=False, ifverbose 
                                location=location,channel=chan)
         substr.sort()
 
+        #stakey = '%s.%s.%s.%s' % (netw, station, location, chan)
+        stakey = '%s' % substr[0].id
+        print('Working on station %s' % stakey)
 
         # what components are in substr?
         components = list()
@@ -102,14 +105,18 @@ def rotate2ENZ(stream, evname_key, isave_ENZ=True, icreateNull=False, ifverbose 
 
             # Station is missing one or more components. Checking to see if the 
             # remaining components are usable
-            if components==['N', 'Z'] or\
-               components==['E', 'Z'] or\
-               components==['1', 'Z'] or\
-               components==['2', 'Z'] or\
-               components==['Z']:
-                print('\nWARNING: %s is missing horizontal component(s). '
-                      'SUBSTITUTING WITH ZEROS...\n'
-                       % substr[0].id)
+            if len(components) < 3:
+                print('\nWARNING. Missing components. Available: ', components)
+                print('substr: ', substr)
+
+            # 2021-05-19 fixed: use permutation in case components not always in same order.
+            # Maybe use itertools to apply each permutations.
+            if         components == ['N', 'Z'] or components == ['Z', 'N'] \
+                    or components == ['E', 'Z'] or components == ['Z', 'E'] \
+                    or components == ['1', 'Z'] or components == ['Z', '1'] \
+                    or components == ['2', 'Z'] or components == ['Z', '2'] \
+                    or components == ['Z']:
+                print('WARNING: Missing horizontal component(s). Substituting with zeros\n')
 
                 for component in ['N', 'E', '1', '2']:
                     remove_trace(substr, component)
