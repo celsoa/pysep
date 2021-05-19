@@ -196,7 +196,9 @@ class getwaveform:
 
         #-----------------------------------------------------------
         # BEGIN OPTIONS MASS DOWNLOADER
-        if self.ifmass_downloader is True:
+        #-----------------------------------------------------------
+        #if self.ifmass_downloader is True:
+        if self.idb is not None and self.ifmass_downloader is True:
             domain = CircularDomain(
                     latitude =self.elat, 
                     longitude=self.elon,
@@ -247,9 +249,12 @@ class getwaveform:
             t1s, t2s= get_phase_arrival_times(inventory,event,self.phases,
                                               self.phase_window,self.taupmodel,
                                               reftime,self.tbefore_sec,self.tafter_sec)
-        # END MASS DOWNLOADER
+        # End mass downloader
         #-----------------------------------------------------------
 
+        #-----------------------------------------------------------
+        # Pick client
+        #-----------------------------------------------------------
         # Add deprecation warning
         if self.idb is not None:
             print('WARNING: Instead of idb use which client you want to use \n'\
@@ -260,7 +265,7 @@ class getwaveform:
         if self.client_name != "LLNL" and self.ifmass_downloader is False:
             # Send request to client
             # There might be other way to do this using 'RoutingClient'
-            print("DATABASE >>> Sending request to",self.client_name,"client for data")
+            print("Sending request to client: %s" % self.client_name)
             c = self.client
             print(c)
             
@@ -283,8 +288,10 @@ class getwaveform:
                                        },
                                        debug=True
                                    )
-            #-------------------
+
+            #-----------------------------------------------------------
             # Download stations
+            #-----------------------------------------------------------
             print("Download stations...")
             stations = c.get_stations(network=self.network, location=self.location,
                                       station=self.station, channel=self.channel,
@@ -377,7 +384,12 @@ class getwaveform:
         # set reftime
         stream = obspy.Stream()
         stream = set_reftime(stream_raw, evtime)
-        
+
+        nsta = len(stream)
+        if nsta < 1:
+            print('STOP. No waveforms to process. N stations = %d\n' % nsta)
+            sys.exit()
+
         print("--> Adding SAC metadata...")
         if self.ifverbose: print(stream.__str__(extended=True))
         st2 = add_sac_metadata(stream, client_name=self.client_name, ev=event, 
@@ -486,6 +498,7 @@ class getwaveform:
         #if self.rotateENZ:
         #st2 = rotate2ENZ(st2, evname_key, self.isave_ENZ, self.icreateNull, self.ifverbose)
 
+        print ('\nBEGIN ROTATE COMPONENTS')
         if self.rotateENZ:
             st2 = rotate2ENZ(st2, evname_key, self.isave_ENZ, self.icreateNull, self.ifverbose)
 
@@ -497,7 +510,6 @@ class getwaveform:
         if self.rotateRTZ:
             rotate2RTZ(st2, evname_key, self.ifverbose) 
             
-
         # save CAP weight files
         if self.output_cap_weight_file:
             write_cap_weights(st2, evname_key, self.client_name, event, self.ifverbose)
