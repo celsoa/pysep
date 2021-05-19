@@ -56,6 +56,7 @@ def zerophase_chebychev_lowpass_filter(trace, freqmax):
 #------------rotations---------------------
 
 def rotate2ENZ(stream, evname_key, isave_ENZ=True, icreateNull=False, ifverbose = False):
+    print('\n---> Try rotate components. Function rotate2ENZ')
     outdir = evname_key                  
 
     if not os.path.exists(outdir):
@@ -137,24 +138,16 @@ def rotate2ENZ(stream, evname_key, isave_ENZ=True, icreateNull=False, ifverbose 
 
                 substr.sort()
 
-
             elif components==['E', 'N']:
-                print('\nWARNING: %s is missing vertical component. '
-                      'SUBSTITUTING WITH ZEROS...\n'
-                       % substr[0].id)
-
+                print('WARNING: Missing vertical component. Substituting with zeros\n')
                 trace = copy_trace(substr, component='N')
                 trace.data[:] = 0.
                 trace.stats.channel = trace.stats.channel[:-1]+'Z'
                 trace.stats.sac['cmpinc'] = -90.
                 substr.append(trace)
 
-
             elif components==['1', '2']:
-                print('\nWARNING: %s is missing vertical component. '
-                      'SUBSTITUTING WITH ZEROS...\n'
-                       % substr[0].id)
-
+                print('WARNING: Missing vertical component. Substituting with zeros\n')
                 trace = copy_trace(substr)
                 trace.data[:] = 0.
                 trace.stats.channel = trace.stats.channel[:-1]+'Z'
@@ -162,12 +155,9 @@ def rotate2ENZ(stream, evname_key, isave_ENZ=True, icreateNull=False, ifverbose 
                 trace.stats.sac['cmpinc'] = -90.
                 substr.append(trace)
 
-
             else:
-                print('\nWARNING: %s has no usable components. SKIPPING...\n'
-                      % substr[0].id)
+                print('\nWARNING: No usable components found. Skipping (CHECK IF YOU WANT TO SKIP!)\n')
                 continue
-
 
         # Rotate to NEZ first
         # Sometimes channels are not orthogonal (example: 12Z instead of NEZ)
@@ -182,14 +172,12 @@ def rotate2ENZ(stream, evname_key, isave_ENZ=True, icreateNull=False, ifverbose 
         dip2 = substr[1].stats.sac['cmpinc']
         dip3 = substr[2].stats.sac['cmpinc']
         if ifverbose:
-            #R==> BHE 0.0 90.0 BHN 0.0 0.0 BHZ -90.0 0.0
-            #--> Station DK.DAG..BH* Rotating random orientation to NEZ.
-            print('--> Station ' + netw + '.' + station + '.' + location + '.' + chan +
-                  ' Rotating random orientation to NEZ.')
-            print('R==>',
-                     substr[0].stats.channel, substr[0].stats.sac['cmpinc'], substr[0].stats.sac['cmpaz'], \
-                     substr[1].stats.channel, substr[1].stats.sac['cmpinc'], substr[1].stats.sac['cmpaz'], \
-                     substr[2].stats.channel, substr[2].stats.sac['cmpinc'], substr[2].stats.sac['cmpaz'])
+            print('Rotation parameters')
+            for i in range(3):
+                print('%s cmpinc %7.2f cmpaz %7.2f' %
+                    (substr[i].stats.channel,
+                     substr[i].stats.sac['cmpinc'],
+                     substr[i].stats.sac['cmpaz']))
 
         # 2021-05-11 
         # Not clear why some stations can't rotate.
@@ -258,6 +246,7 @@ def rotate2ENZ(stream, evname_key, isave_ENZ=True, icreateNull=False, ifverbose 
     return stream
 
 def rotate2UVW(stream, evname_key):
+    print('\n---> Try rotate components. Function rotate2UVW')
     # Directory is made, now rotate
     # Sorted stream makes for structured loop
     stream.sort()
@@ -282,6 +271,7 @@ def rotate2UVW(stream, evname_key):
         rotate2UVW_station(substr2,evname_key)
 
 def rotate2RTZ(stream, evname_key, ifverbose=False):
+    print('\n---> Try rotate components. Function rotate2RTZ')
     
     outdir = evname_key
     
@@ -307,20 +297,28 @@ def rotate2RTZ(stream, evname_key, ifverbose=False):
         substr.sort()
 
         # stream.rotate('NE->RT') #And then boom, obspy rotates everything!
+        stakey = '%s.%s.%s.%s' % (netw, station, location, chan)
+        #stakey = '%s' % substr[0].id
+        print('Working on station %s. Rotating ENZ to RTZ' % stakey)
         try:
+            print('Rotation parameters')
             if ifverbose:
-                print('--> Station ' + netw + '.' + station + '.' + location + '.' + chan + \
-                          ' Rotating ENZ to RTZ.')
-                print('--->',substr[0].stats.channel, substr[0].stats.sac['cmpinc'], substr[0].stats.sac['cmpaz'], \
-                          substr[1].stats.channel, substr[1].stats.sac['cmpinc'],substr[1].stats.sac['cmpaz'], \
-                          substr[2].stats.channel, substr[2].stats.sac['cmpinc'], substr[2].stats.sac['cmpaz'])
+                print('Before')
+                for i in range(3):
+                    print('%s cmpinc %7.2f cmpaz %7.2f' %
+                        (substr[i].stats.channel,
+                         substr[i].stats.sac['cmpinc'],
+                         substr[i].stats.sac['cmpaz']))
 
             substr.rotate('NE->RT')
 
             if ifverbose:
-                print('--->',substr[0].stats.channel, substr[0].stats.sac['cmpinc'], substr[0].stats.sac['cmpaz'], \
-                          substr[1].stats.channel, substr[1].stats.sac['cmpinc'],substr[1].stats.sac['cmpaz'], \
-                          substr[2].stats.channel, substr[2].stats.sac['cmpinc'], substr[2].stats.sac['cmpaz'])
+                print('After')
+                for i in range(3):
+                    print('%s cmpinc %7.2f cmpaz %7.2f' %
+                        (substr[i].stats.channel,
+                         substr[i].stats.sac['cmpinc'],
+                         substr[i].stats.sac['cmpaz']))
 
             # Fix cmpaz metadata for Radial and Transverse components
             for tr in substr.traces:
@@ -345,7 +343,7 @@ def rotate2RTZ(stream, evname_key, ifverbose=False):
                 tr.write(outfnam, format='SAC')
             
         except:
-            "Rotation failed, skipping..."
+            print ('ERROR. Rotation failed. Skipping (CHECK IF YOU WANT TO SKIP!)')
             continue
 
 
@@ -1315,7 +1313,7 @@ def resp_plot_remove(st, ipre_filt, pre_filt, iplot_response, water_level,
     TODO consider separating the remove and plot functions
     """
 
-    print("\nRemove instrument response")
+    print("\nREMOVE INSTRUMENT RESPONSE")
     for tr in st:
         station_key = "%s.%s.%s.%s" % (tr.stats.network, tr.stats.station,\
                 tr.stats.location, tr.stats.channel)
@@ -1492,10 +1490,14 @@ def do_waveform_QA(stream, client_name, event, evtime, before, after):
 def rotate2UVW_station(st,evname_key):
     """
     Rotate to UVW orthogonal frame.
-    In Symmetric Triaxial Seismometers, the sensing elements are also arranged to be mutually orthogonal, but instead of one axis being vertical, all three are inclined upwards from the horizontal at precisely the same angle, as if they were aligned with the edges of a cube balanced on a corner.
+    In Symmetric Triaxial Seismometers, the sensing elements are also arranged
+    to be mutually orthogonal, but instead of one axis being vertical, all
+    three are inclined upwards from the horizontal at precisely the same angle,
+    as if they were aligned with the edges of a cube balanced on a corner.
     Reference:
     http://link.springer.com/referenceworkentry/10.1007/978-3-642-36197-5_194-1
     """
+    print('Inside function rotate2UVW_station')
     outdir = evname_key + '/UVW'
     d1 = st[0].data
     d2 = st[1].data
