@@ -455,13 +455,15 @@ class getwaveform:
 
         #  Resample
         if self.resample_TF == True:
+            print('\nRESAMPLING DATA\n')
+            print("New sample rate %f Hz" % self.resample_freq)
             # NOTE !!! tell the user if BOTH commands are disabled NOTE !!!
             if (self.client_name == "IRIS"):
                 resample(st2, freq=self.resample_freq)
             elif (self.client_name == "LLNL"):
                 resample_cut(st2, self.resample_freq, evtime, self.tbefore_sec, self.tafter_sec)
         else:
-            print("WARNING. Will not resample. Using original rate from the data")
+            print("WARNING. Will not resample. Using original rate from the data: %f Hz" % self.resample_freq)
 
         # match start and end points for all traces
         st2 = trim_maxstart_minend(stalist, st2, self.client_name, event, evtime, 
@@ -545,6 +547,8 @@ class getwaveform:
             nez_asdf_filename = nez_dir + evname_key + ".h5"
             os.system("../asdf_converters/asdf_converters/sac2asdf.py "
                       + nez_dir + " " + nez_asdf_filename + " observed")
+
+        print ('\nDone processing waveform data for event %s' % evname_key)
             
 
     def copy(self):
