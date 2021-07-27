@@ -198,16 +198,22 @@ class getwaveform:
         # BEGIN OPTIONS MASS DOWNLOADER
         if self.ifmass_downloader is True:
             domain = CircularDomain(
+                    latitude =self.elat, 
                     longitude=self.elon,
-                    latitude=self.elat, 
                     minradius=kilometer2degrees(self.min_dist), 
                     maxradius=kilometer2degrees(self.max_dist))
+            print('DEBUG. domain radius (deg) min/max %f/%f (input, km %f)' %
+                    (domain.minradius, domain.maxradius, self.max_dist))
+            print('DEBUG. lon/lat %f/%f' %
+                    (domain.longitude, domain.latitude))
             
             restrictions = Restrictions(
                 starttime = reftime - self.tbefore_sec,
                 endtime = reftime + self.tafter_sec,
-                station_starttime = None,
-                station_endtime = None,
+                #station_starttime = None,
+                #station_endtime = None,
+                station_starttime = reftime - self.tbefore_sec,  # 2021-06-25 TEST. only query stations available during the event times.
+                station_endtime = reftime + self.tafter_sec,
                 chunklength_in_sec = None,
                 network = self.network,
                 station = self.station,
@@ -219,7 +225,7 @@ class getwaveform:
                 reject_channels_with_gaps=False,
                 minimum_length = 0.0,
                 sanitize = True,
-                minimum_interstation_distance_in_m = 0,
+                minimum_interstation_distance_in_m = 100,   # 2021-07-13 avoid using same station with different names
                 #channel_priorities=(),
                 #location_priorities=())
 		)
@@ -227,7 +233,7 @@ class getwaveform:
             mdl = MassDownloader()
             
             outdir = './' + self.evname
-            mdl.download(domain, restrictions, 
+            mdl.download(domain=domain, restrictions=restrictions, 
                          mseed_storage=outdir+"/mass_downloader/waveforms", 
                          stationxml_storage=outdir+"/mass_downloader/stations", 
                          download_chunk_size_in_mb=20, threads_per_client=3, print_report=True)
