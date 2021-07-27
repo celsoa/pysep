@@ -16,6 +16,8 @@ def get_ev_info(ev_info,iex):
         #ev_info.icreateNull = 1
         ev_info.icreateNull = 0
 
+        ev_info.overwrite_ddir = 0  
+
         #RAW and ENZ files can be used when checking if you are receiving all the data ($PYSEP/check_getwaveform.bash)
         ev_info.isave_raw = False
         ev_info.isave_raw_processed = False
@@ -35,7 +37,8 @@ def get_ev_info(ev_info,iex):
         ev_info.tafter_sec = 500
 
         ev_info.channel = 'BH?'
-        ev_info.resample_freq = 50
+        ev_info.resample_TF = True
+        ev_info.resample_freq = 20
         ev_info.scale_factor = 100
         #ev_info.phase_window = False
         #-------for specfem------------
