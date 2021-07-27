@@ -117,7 +117,7 @@ def rotate2ENZ(stream, evname_key, isave_ENZ=True, icreateNull=False, ifverbose 
                     or components == ['1', 'Z'] or components == ['Z', '1'] \
                     or components == ['2', 'Z'] or components == ['Z', '2'] \
                     or components == ['Z']:
-                print('WARNING: Missing horizontal component(s). Substituting with zeros\n')
+                print('WARNING: Missing horizontal component(s). Substituting with zeros')
 
                 for component in ['N', 'E', '1', '2']:
                     remove_trace(substr, component)
@@ -139,7 +139,7 @@ def rotate2ENZ(stream, evname_key, isave_ENZ=True, icreateNull=False, ifverbose 
                 substr.sort()
 
             elif components==['E', 'N']:
-                print('WARNING: Missing vertical component. Substituting with zeros\n')
+                print('WARNING: Missing vertical component. Substituting with zeros')
                 trace = copy_trace(substr, component='N')
                 trace.data[:] = 0.
                 trace.stats.channel = trace.stats.channel[:-1]+'Z'
@@ -147,7 +147,7 @@ def rotate2ENZ(stream, evname_key, isave_ENZ=True, icreateNull=False, ifverbose 
                 substr.append(trace)
 
             elif components==['1', '2']:
-                print('WARNING: Missing vertical component. Substituting with zeros\n')
+                print('WARNING: Missing vertical component. Substituting with zeros')
                 trace = copy_trace(substr)
                 trace.data[:] = 0.
                 trace.stats.channel = trace.stats.channel[:-1]+'Z'
@@ -172,17 +172,12 @@ def rotate2ENZ(stream, evname_key, isave_ENZ=True, icreateNull=False, ifverbose 
         dip2 = substr[1].stats.sac['cmpinc']
         dip3 = substr[2].stats.sac['cmpinc']
         if ifverbose:
-            print('Rotation parameters')
-            for i in range(3):
-                print('%s cmpinc %7.2f cmpaz %7.2f' %
-                    (substr[i].stats.channel,
-                     substr[i].stats.sac['cmpinc'],
-                     substr[i].stats.sac['cmpaz']))
+            print_rotation_parameters(substr)
 
         # 2021-05-11 
         # Not clear why some stations can't rotate.
         # TODO  Find bug that crashes rotation for some stations. 
-        # Still clean up vipuls method.
+        # Still cleaning up vipuls codes.
         # The rotation crashes often and breaks the downloading.
         # Use `try` to recover and continue with other stations, but the issue still not resolved.
         # It may be the dummy zeros created for the hirozontal components when station only has vertical component.
@@ -222,6 +217,9 @@ def rotate2ENZ(stream, evname_key, isave_ENZ=True, icreateNull=False, ifverbose 
         substr[0].stats.sac['kcmpnm'] = substr[0].stats.channel
         substr[1].stats.sac['kcmpnm'] = substr[1].stats.channel
         substr[2].stats.sac['kcmpnm'] = substr[2].stats.channel
+
+        if ifverbose:
+            print_rotation_parameters(substr)
 
         # save NEZ waveforms
         if isave_ENZ:
@@ -301,24 +299,13 @@ def rotate2RTZ(stream, evname_key, ifverbose=False):
         #stakey = '%s' % substr[0].id
         print('Working on station %s. Rotating ENZ to RTZ' % stakey)
         try:
-            print('Rotation parameters')
             if ifverbose:
-                print('Before')
-                for i in range(3):
-                    print('%s cmpinc %7.2f cmpaz %7.2f' %
-                        (substr[i].stats.channel,
-                         substr[i].stats.sac['cmpinc'],
-                         substr[i].stats.sac['cmpaz']))
+                print_rotation_parameters(substr)
 
             substr.rotate('NE->RT')
 
             if ifverbose:
-                print('After')
-                for i in range(3):
-                    print('%s cmpinc %7.2f cmpaz %7.2f' %
-                        (substr[i].stats.channel,
-                         substr[i].stats.sac['cmpinc'],
-                         substr[i].stats.sac['cmpaz']))
+                print_rotation_parameters(substr)
 
             # Fix cmpaz metadata for Radial and Transverse components
             for tr in substr.traces:
@@ -345,6 +332,21 @@ def rotate2RTZ(stream, evname_key, ifverbose=False):
         except:
             print ('ERROR. Rotation failed. Skipping (CHECK IF YOU WANT TO SKIP!)')
             continue
+
+def print_rotation_parameters(substr):
+    """ helper routine to pretty print+debug rotation parameters (use with before/after)
+    """
+    #for i in range(3):
+    #    print('%s cmpinc %7.2f cmpaz %7.2f' %
+    #        (substr[i].stats.channel,
+    #         substr[i].stats.sac['cmpinc'],
+    #         substr[i].stats.sac['cmpaz']))
+    print('Rotation parameters. channel dip azim: %s %s %s / %s %s %s /%s %s %s' % (
+            substr[0].stats.channel, substr[0].stats.sac['cmpinc'], substr[0].stats.sac['cmpaz'],
+            substr[1].stats.channel, substr[1].stats.sac['cmpinc'], substr[1].stats.sac['cmpaz'],
+            substr[2].stats.channel, substr[2].stats.sac['cmpinc'], substr[2].stats.sac['cmpaz']))
+
+    pass
 
 
 def write_cap_weights(stream, evname_key, client_name='', event='', ifverbose=False):
@@ -1313,7 +1315,7 @@ def resp_plot_remove(st, ipre_filt, pre_filt, iplot_response, water_level,
     TODO consider separating the remove and plot functions
     """
 
-    print("\nREMOVE INSTRUMENT RESPONSE")
+    print("\nREMOVE INSTRUMENT RESPONSE\n")
     for tr in st:
         station_key = "%s.%s.%s.%s" % (tr.stats.network, tr.stats.station,\
                 tr.stats.location, tr.stats.channel)
@@ -1359,7 +1361,7 @@ def do_waveform_QA(stream, client_name, event, evtime, before, after):
     - fill in missing data
     """
 
-    print("\nQUALITY CHECK!")
+    print("\nQUALITY CHECK!\n")
 
     output_log = ("data_processing_status_%s.log" % client_name)
     fid = open(output_log, "w")
