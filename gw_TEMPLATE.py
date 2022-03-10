@@ -6,6 +6,7 @@ def get_ev_info(ev_info,iex):
 # ===============================================================
     if iex == 0:
         # DATA PREPARATION / PROCESSING
+        ev_info.idb = 1     # 1 = IRIS. % 20220223 calvizuri -- seems needed. not sure why I removed it previously. TODO revise conditional tests in getwaveform to deprecate this, if that's the goal
         ev_info.use_catalog = 0
         ev_info.ifmass_downloader = True
         #ev_info.iris_federator = True
