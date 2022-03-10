@@ -373,6 +373,7 @@ def write_cap_weights(stream, evname_key, client_name='', event='', ifverbose=Fa
     wdata = {}
 
     # for each station get and store arrival times, distance, azim
+    nsta = 0
     for tr in stream:
         current_sta = tr.stats
         # Only write once per 3 components
@@ -406,6 +407,10 @@ def write_cap_weights(stream, evname_key, client_name='', event='', ifverbose=Fa
         laststa = current_sta.station
         lastloc = current_sta.location
         lastcha = current_sta.channel[:-1]
+        nsta = nsta + 1
+    if nsta<1: 
+        print("STOP. No station data to process.")
+        sys.exit()
 
     infile = outdir + "/" + "staweights.tmp"
     if not os.path.isfile(infile):
