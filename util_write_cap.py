@@ -1225,7 +1225,7 @@ def amp_rescale_llnl(st, scale_factor):
                     (station_key, scale_factor_HG))
             tr.data = tr.data * scale_factor_HG
             tr.stats.sac['scale'] = scale_factor_HG * scale_factor
-        elif (tr.stats.channel is 'R') or (tr.stats.channel is 'T') or (tr.stats.channel is 'V') :
+        elif (tr.stats.channel == 'R') or (tr.stats.channel == 'T') or (tr.stats.channel == 'V') :
             print("--> WARNING LLNL station %14s Rescaling by %f" % \
                     (station_key, scale_factor_XX))
             tr.data = tr.data * scale_factor_XX
@@ -1320,7 +1320,7 @@ def resp_plot_remove(st, ipre_filt, pre_filt, iplot_response, water_level,
         station_key = "%s.%s.%s.%s" % (tr.stats.network, tr.stats.station,\
                 tr.stats.location, tr.stats.channel)
 
-        if ipre_filt is 0 or ipre_filt is 1:
+        if ipre_filt == 0 or ipre_filt == 1:
             pre_filt = get_pre_filt(ipre_filt, tr) 
 
         # Plot or remove instrument response but not both.
