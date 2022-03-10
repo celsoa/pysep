@@ -382,6 +382,7 @@ class getwaveform:
                     stream_raw.append(tr)
     
         # set reftime
+        #inventory = stations
         stream = obspy.Stream()
         stream = set_reftime(stream_raw, evtime)
 
@@ -393,8 +394,14 @@ class getwaveform:
         print("--> Adding SAC metadata...")
         if self.ifverbose: print(stream.__str__(extended=True))
         st2 = add_sac_metadata(stream, client_name=self.client_name, ev=event, 
-                               stalist=inventory, taup_model= self.taupmodel, 
-                               phases=phases, phase_write = self.write_sac_phase)
+                               inventory=inventory, taup_model= self.taupmodel, 
+                               )
+                                # 2022-03-10 CHECK IF NEEDED: stalist=inventory.
+                                # phases=phases, phase_write = self.write_sac_phase)
+        print('stalist inventory', inventory)
+        if(len(st2)<1):
+            print('STOP. No waveforms left to process.')
+            sys.exit()
         
         # Do some waveform QA
         do_waveform_QA(st2, self.client_name, event, evtime, 
