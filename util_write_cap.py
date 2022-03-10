@@ -512,10 +512,24 @@ def write_ev_info(ev, evname_key):
         ev.origins[0].latitude, ev.origins[0].depth / 1000.0,
         ev.magnitudes[0].mag))
 
-def add_sac_metadata(st, client_name="LLNL", ev=[], stalist=[], ifverbose=False, 
+def add_sac_metadata(st, client_name="LLNL", ev=[], inventory=[], ifverbose=False, 
                      taup_model = "ak135",phases=["P","P"], phase_write=False):
     """
-    Add event and station metadata to an Obspy stream
+    Add event and station metadata to an obspy Stream
+    method: 
+    1. for each station in Stream, find matching station in Inventory
+    2. get station info from Inventory into SAC header
+    3. get origin info from Event into SAC header
+    4. 
+    5. 
+    6. 
+
+    Refs
+    SAC headers: http://www.adc1.iris.edu/files/sac-manual/manual/file_format.html
+
+    TODO  
+        Separate into sections: Phase Picks, Instrument, Station, Event, etc.
+        (See SAC headers)
     """
     fid = open('traces_inventory_log', "w")
     out_form = ('%s %s %s %s %s %s %s %s %s')
@@ -528,7 +542,7 @@ def add_sac_metadata(st, client_name="LLNL", ev=[], stalist=[], ifverbose=False,
         # This is the best way to make sac objects (this is now done in getwaveform_iris.py)
         # tmptr = obspy.read('tmppp.sac').traces[0]
         # Loop over all the networks
-        for net in stalist:
+        for net in inventory:
             # Find the right station
             for stan in net:
                 # Hopefully there isn't more than one
@@ -565,7 +579,7 @@ def add_sac_metadata(st, client_name="LLNL", ev=[], stalist=[], ifverbose=False,
                 Ptime = pick.time - ev.origins[0].time
                 tr.stats.sac['a'] = Ptime
 
-        # !!!!Weird!!!
+        # otime to kevnm, tod
         tr.stats.sac['kevnm'] = \
             ev.origins[0].time.strftime('%Y%m%d%H%M%S%f')[:-3]
 
@@ -587,20 +601,34 @@ def add_sac_metadata(st, client_name="LLNL", ev=[], stalist=[], ifverbose=False,
         tmp = tr.stats.channel
         
         # match trace station info with the station inventory info
+        # 2022-02-28 NOT CLEAR WHAT THIS IS DOING. Match the following for what? 
+        # trace.stats.net.sta.loc.cha 
+        #   inventory.net.sta.loc.cha
         stn_in_inventory=0 
-        for net in stalist:
-            for stan in net.stations:
-                for ch in stan.channels:
-                    if tr.stats.channel == ch.code.upper() and \
-                            tr.stats.location == ch.location_code and \
-                            tr.stats.station == stan.code and \
-                            tr.stats.network == net.code:
+        for net in inventory:
+            for sta in net.stations:
+                for cha in sta.channels:
+                    ##-----------------------------------------------------------
+                    ##2022-03-02 TEMP BUG FIX -- NORSAR STATIONS DO NOT HAVE NETWORK CODE IN SCHEMA CSS3.0. WHAT.
+                    #if 'NO' in net.code.upper() and tr.stats.network != net.code:
+                    #    tr.stats.network = 'NO'  # 20220302 TODO FIX THIS IN CSS3.0? REPORTED TO ANDREASK WHO SAID WILL OPEN A MANTIS ISSUE.
+                    #    #print('WARNING TEMP BUG FIX. NEW NETWORK CODE IN INVENTORY: net.code %s' % net.code)
+                    #-----------------------------------------------------------
+                    if tr.stats.channel.upper()  == cha.code.upper() and \
+                       tr.stats.location.upper() == cha.location_code.upper() and \
+                       tr.stats.station.upper()  == sta.code.upper() and \
+                       tr.stats.network.upper()  == net.code.upper():
                         if ifverbose:
-                            print('--->', tr.stats.channel, ch.code, tr.stats.location, 
-                                  ch.location_code, tr.stats.station, stan.code, tr.stats.network, net.code)
-                            print('--->', net.code, stan.code, ch.location_code, ch.code, 'Azimuth:', ch.azimuth, 'Dip:', ch.dip) 
-                        tr.stats.sac['cmpinc'] = ch.dip
-                        tr.stats.sac['cmpaz'] = ch.azimuth
+                            print('--->', 
+                                  tr.stats.channel, cha.code, 
+                                  tr.stats.location, cha.location_code, 
+                                  tr.stats.station, sta.code, 
+                                  tr.stats.network, net.code)
+                            print('--->', net.code, sta.code, 
+                                    cha.location_code, cha.code, 
+                                    'Azimuth:', cha.azimuth, 'Dip:', cha.dip) 
+                        tr.stats.sac['cmpinc'] = cha.dip
+                        tr.stats.sac['cmpaz'] = cha.azimuth
                         stn_in_inventory=1   # trace does have inventory info
                         # Note: LLNL database does not have instruement response info or the sensor info
                         # Since units are different for Raw waveforms and after response is removed. This header is now set in getwaveform_iris.py
@@ -610,7 +638,7 @@ def add_sac_metadata(st, client_name="LLNL", ev=[], stalist=[], ifverbose=False,
                             #else:
                             #    scale_factor = tr.stats.sac['kuser0']
                             # tr.stats.sac['kuser0'] = 'M/S'
-                            sensor = ch.sensor.description
+                            sensor = cha.sensor.description
                             # add sensor information
                             # SAC header variables can only be 8 characters long (except KEVNM: 16 chars)
                             # CAUTION: Using KT* instead to store instrument info (KT actually is for time pick identification)
@@ -631,11 +659,14 @@ def add_sac_metadata(st, client_name="LLNL", ev=[], stalist=[], ifverbose=False,
                                     # tr.stats.sac['kt'+str(header_tag)] = sensor[indx_start:indx_end]
                                     # TypeError: 'NoneType' object is not subscriptable
                                     tr.stats.sac['kt'+str(header_tag)] = 'N/A'
-                                    print('WARNING. Sensor = %s. Setting as N/A' % sensor)
-                                    print(stan)
+                                    print('WARNING. Unable to set channel.sensors.description. Sensor = %s. Using N/A' % cha.sensor)
+                                    #print(sta)
 
-
-        
+        if stn_in_inventory==0:
+            print('WARNING. no match in Inventory for station:', (tr.stats.network + tr.stats.station + tr.stats.location + tr.stats.channel))
+            print('WARNING. this station will be removed from the stream')
+            print('WARNING. reason: cannot assign sensor fields: dip, azimuth, description')
+         
         if phase_write:
             model = TauPyModel(model=taup_model)
             dist_deg = kilometer2degrees(tr.stats.sac['dist'],radius=6371)
@@ -696,9 +727,13 @@ def add_sac_metadata(st, client_name="LLNL", ev=[], stalist=[], ifverbose=False,
         # I don't even know
         tr.stats.sac['lcalda'] = 1
 
-    # Remove traces without inventory info
-    for tr in st_del:
-        st.remove(tr)
+    ## Remove traces without inventory info
+    ## 20220301 calvizuri --  disable for now.
+    ## 20220301 TODO add option in self to make this a user choice.
+    ##print('####### DEBUG. CHECK N TRACES, tr: ', len(st))
+    #for tr in st_del:
+    #    print('Removing trace: ', tr)
+    #    st.remove(tr)
 
     return st
 
@@ -932,7 +967,7 @@ def write_stream_sac_raw(stream_raw, path_to_waveforms,
         tr.stats.sac['kuser0'] = 'RAW'
 
     stream_raw = add_sac_metadata(stream_raw, client_name=client_name, 
-                                  ev=event, stalist=stations)
+                                  ev=event, inventory=stations)
 
     # write raw waveforms
     write_stream_sac(stream_raw, path_to_waveforms, evname_key)
@@ -1353,7 +1388,7 @@ def resp_plot_remove(st, ipre_filt, pre_filt, iplot_response, water_level,
                 tr.remove_response(inventory=stations, water_level=water_level, pre_filt=pre_filt, \
                         output=outformat)
             except Exception as e:
-                print("Failed to correct %s due to: %s" % (tr.id, str(e)))
+                print("WARNING. FATAL. Failed to correct %s due to: %s" % (tr.id, str(e)))
 
         # update units after scale factor is removed
         _units_after_response(tr, scale_factor, outformat)
@@ -1452,15 +1487,18 @@ def do_waveform_QA(stream, client_name, event, evtime, before, after):
     stream.merge(fill_value='interpolate')
 
     # remove stations (part 2 of 2), this time if npts_actual < npts_expected
-    print("Checking stations where npts_actual < npts_expected ...")
+    print("Checking data downloaded: npts_actual and npts_expected ...")
     for tr in stream:
         station_key = "%s.%s.%s.%s" % (tr.stats.network, tr.stats.station,\
                 tr.stats.location, tr.stats.channel)
         npts_expected = tr.stats.sampling_rate * (before + after)
+        ipercent = 100.0*(tr.stats.npts / npts_expected)
         if tr.stats.npts < npts_expected:
-            print("WARNING station %14s Data available < (before + after). Consider removing this station" 
-                    % station_key)
-            print(tr.stats.npts,'<',tr.stats.sampling_rate * (before + after))
+            #print("WARNING station %14s Data available < (before + after). Consider removing this station" 
+            #        % station_key)
+            #print(tr.stats.npts,'<', npts_expected)
+            print('WARNING. %14s: %5.1f%% data available. Consider removing this station. Requested: %d. Obtained: %d' %\
+                    (station_key, ipercent, npts_expected, tr.stats.npts))
             fid.write(" -- data missing")
 
             ## remove waveforms with missing data
