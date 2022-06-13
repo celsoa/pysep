@@ -638,7 +638,13 @@ def add_sac_metadata(st, client_name="LLNL", ev=[], inventory=[], ifverbose=Fals
                             #else:
                             #    scale_factor = tr.stats.sac['kuser0']
                             # tr.stats.sac['kuser0'] = 'M/S'
-                            sensor = cha.sensor.description
+                            # 2022-03-11 add try/except for some stations in RO net: AttributeError: 'NoneType' object has no attribute 'description'
+                            try:
+                                sensor = cha.sensor.description
+                            except Exception as e:
+                                print('WARNING. Unable to get channel.sensor.description. Sensor = %s. Using N/A' % cha.sensor)
+                                print(e)
+                                continue
                             # add sensor information
                             # SAC header variables can only be 8 characters long (except KEVNM: 16 chars)
                             # CAUTION: Using KT* instead to store instrument info (KT actually is for time pick identification)
@@ -1145,10 +1151,10 @@ def trim_maxstart_minend(stalist, st2, client_name, event, evtime,
             continue
         npts = int((min_endtime - max_starttime) * samprate)
         if ifverbose:
-            print("Old endpoints  %s - %s | %f Hz, %d samples" % (max_starttime, min_endtime, samprate, npts))
+            print("%15s. Old endpoints  %s - %s | %6.1f Hz, %8d samples" % (station_key, max_starttime, min_endtime, samprate, npts))
         npts = int((min_endtime - max_starttime) * resample_freq)
         if ifverbose:
-            print("New endpoints  %s - %s | %f Hz, %d samples" % (max_starttime, min_endtime, resample_freq, npts))
+            print("%15s. New endpoints  %s - %s | %6.1f Hz, %8d samples" % (station_key, max_starttime, min_endtime, resample_freq, npts))
 
         # APPLY TRIM COMMAND
         try:
