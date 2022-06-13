@@ -6,9 +6,10 @@ def get_ev_info(ev_info,iex):
 # ===============================================================
     if iex == 0:
         # DATA PREPARATION / PROCESSING
-        ev_info.idb = 1     # 1 = IRIS. % 20220223 calvizuri -- seems needed. not sure why I removed it previously. TODO revise conditional tests in getwaveform to deprecate this, if that's the goal
         ev_info.use_catalog = 0
-        ev_info.ifmass_downloader = True
+        ev_info.idb = 1
+        ev_info.ifmass_downloader = False
+        ev_info.client_name = "NORSAR"
         #ev_info.iris_federator = True
         ev_info.ifverbose = True    # output all proccessing steps
 
@@ -17,7 +18,7 @@ def get_ev_info(ev_info,iex):
         #ev_info.icreateNull = 1
         ev_info.icreateNull = 0
 
-        ev_info.overwrite_ddir = 0  
+        ev_info.overwrite_ddir = 1 
 
         #RAW and ENZ files can be used when checking if you are receiving all the data ($PYSEP/check_getwaveform.bash)
         ev_info.isave_raw = False
@@ -25,19 +26,21 @@ def get_ev_info(ev_info,iex):
         ev_info.isave_ENZ = False
 
         # EVENT INFO
-        #2021-02-24T10:05:57.024000Z -22.20764 63.91658 1.098 5.72
-        ev_info.otime = obspy.UTCDateTime("2021-02-24T10:05:57.024000Z")
-        ev_info.elon = -22.20764
-        ev_info.elat = 63.91658
-        ev_info.edep = 1098 
-        ev_info.emag = 4.6
+        # NK6m nk paper alvizuri-tape
+        #  2017/09/03 03:38:31.8100  129.078  41.300
+        #ev_info.otime = obspy.UTCDateTime("2017-09-03T03:38:31.8100")
+        ev_info.otime = obspy.UTCDateTime("2017-09-03T03:30:01.760")
+        ev_info.elon = 129.078
+        ev_info.elat = 41.300
+        ev_info.edep = 0
+        ev_info.emag = 5.2
 
         ev_info.min_dist = 0
-        ev_info.max_dist = 2000
+        ev_info.max_dist = 1000
         ev_info.tbefore_sec = 100
-        ev_info.tafter_sec = 500
+        ev_info.tafter_sec = 2000
 
-        ev_info.channel = 'BH?'
+        ev_info.channel = 'BH?,HH?'
         ev_info.resample_TF = True
         ev_info.resample_freq = 20
         ev_info.scale_factor = 100

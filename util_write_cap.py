@@ -56,6 +56,7 @@ def zerophase_chebychev_lowpass_filter(trace, freqmax):
 #------------rotations---------------------
 
 def rotate2ENZ(stream, evname_key, isave_ENZ=True, icreateNull=False, ifverbose = False):
+    print('\n---> Try rotate components. Function rotate2ENZ')
     outdir = evname_key                  
 
     if not os.path.exists(outdir):
@@ -89,6 +90,9 @@ def rotate2ENZ(stream, evname_key, isave_ENZ=True, icreateNull=False, ifverbose 
                                location=location,channel=chan)
         substr.sort()
 
+        #stakey = '%s.%s.%s.%s' % (netw, station, location, chan)
+        stakey = '%s' % substr[0].id
+        print('Working on station %s' % stakey)
 
         # what components are in substr?
         components = list()
@@ -102,14 +106,18 @@ def rotate2ENZ(stream, evname_key, isave_ENZ=True, icreateNull=False, ifverbose 
 
             # Station is missing one or more components. Checking to see if the 
             # remaining components are usable
-            if components==['N', 'Z'] or\
-               components==['E', 'Z'] or\
-               components==['1', 'Z'] or\
-               components==['2', 'Z'] or\
-               components==['Z']:
-                print('\nWARNING: %s is missing horizontal component(s). '
-                      'SUBSTITUTING WITH ZEROS...\n'
-                       % substr[0].id)
+            if len(components) < 3:
+                print('\nWARNING. Missing components. Available: ', components)
+                print('substr: ', substr)
+
+            # 2021-05-19 fixed: use permutation in case components not always in same order.
+            # Maybe use itertools to apply each permutations.
+            if         components == ['N', 'Z'] or components == ['Z', 'N'] \
+                    or components == ['E', 'Z'] or components == ['Z', 'E'] \
+                    or components == ['1', 'Z'] or components == ['Z', '1'] \
+                    or components == ['2', 'Z'] or components == ['Z', '2'] \
+                    or components == ['Z']:
+                print('WARNING: Missing horizontal component(s). Substituting with zeros')
 
                 for component in ['N', 'E', '1', '2']:
                     remove_trace(substr, component)
@@ -130,24 +138,16 @@ def rotate2ENZ(stream, evname_key, isave_ENZ=True, icreateNull=False, ifverbose 
 
                 substr.sort()
 
-
             elif components==['E', 'N']:
-                print('\nWARNING: %s is missing vertical component. '
-                      'SUBSTITUTING WITH ZEROS...\n'
-                       % substr[0].id)
-
+                print('WARNING: Missing vertical component. Substituting with zeros')
                 trace = copy_trace(substr, component='N')
                 trace.data[:] = 0.
                 trace.stats.channel = trace.stats.channel[:-1]+'Z'
                 trace.stats.sac['cmpinc'] = -90.
                 substr.append(trace)
 
-
             elif components==['1', '2']:
-                print('\nWARNING: %s is missing vertical component. '
-                      'SUBSTITUTING WITH ZEROS...\n'
-                       % substr[0].id)
-
+                print('WARNING: Missing vertical component. Substituting with zeros')
                 trace = copy_trace(substr)
                 trace.data[:] = 0.
                 trace.stats.channel = trace.stats.channel[:-1]+'Z'
@@ -155,12 +155,9 @@ def rotate2ENZ(stream, evname_key, isave_ENZ=True, icreateNull=False, ifverbose 
                 trace.stats.sac['cmpinc'] = -90.
                 substr.append(trace)
 
-
             else:
-                print('\nWARNING: %s has no usable components. SKIPPING...\n'
-                      % substr[0].id)
+                print('\nWARNING: No usable components found. Skipping (CHECK IF YOU WANT TO SKIP!)\n')
                 continue
-
 
         # Rotate to NEZ first
         # Sometimes channels are not orthogonal (example: 12Z instead of NEZ)
@@ -175,19 +172,12 @@ def rotate2ENZ(stream, evname_key, isave_ENZ=True, icreateNull=False, ifverbose 
         dip2 = substr[1].stats.sac['cmpinc']
         dip3 = substr[2].stats.sac['cmpinc']
         if ifverbose:
-            #R==> BHE 0.0 90.0 BHN 0.0 0.0 BHZ -90.0 0.0
-            #--> Station DK.DAG..BH* Rotating random orientation to NEZ.
-            print('--> Station ' + netw + '.' + station + '.' + location + '.' + chan +
-                  ' Rotating random orientation to NEZ.')
-            print('R==>',
-                     substr[0].stats.channel, substr[0].stats.sac['cmpinc'], substr[0].stats.sac['cmpaz'], \
-                     substr[1].stats.channel, substr[1].stats.sac['cmpinc'], substr[1].stats.sac['cmpaz'], \
-                     substr[2].stats.channel, substr[2].stats.sac['cmpinc'], substr[2].stats.sac['cmpaz'])
+            print_rotation_parameters(substr)
 
         # 2021-05-11 
         # Not clear why some stations can't rotate.
         # TODO  Find bug that crashes rotation for some stations. 
-        # Still clean up vipuls method.
+        # Still cleaning up vipuls codes.
         # The rotation crashes often and breaks the downloading.
         # Use `try` to recover and continue with other stations, but the issue still not resolved.
         # It may be the dummy zeros created for the hirozontal components when station only has vertical component.
@@ -228,6 +218,9 @@ def rotate2ENZ(stream, evname_key, isave_ENZ=True, icreateNull=False, ifverbose 
         substr[1].stats.sac['kcmpnm'] = substr[1].stats.channel
         substr[2].stats.sac['kcmpnm'] = substr[2].stats.channel
 
+        if ifverbose:
+            print_rotation_parameters(substr)
+
         # save NEZ waveforms
         if isave_ENZ:
             # Create output directory if it doesn't exist
@@ -251,6 +244,7 @@ def rotate2ENZ(stream, evname_key, isave_ENZ=True, icreateNull=False, ifverbose 
     return stream
 
 def rotate2UVW(stream, evname_key):
+    print('\n---> Try rotate components. Function rotate2UVW')
     # Directory is made, now rotate
     # Sorted stream makes for structured loop
     stream.sort()
@@ -275,6 +269,7 @@ def rotate2UVW(stream, evname_key):
         rotate2UVW_station(substr2,evname_key)
 
 def rotate2RTZ(stream, evname_key, ifverbose=False):
+    print('\n---> Try rotate components. Function rotate2RTZ')
     
     outdir = evname_key
     
@@ -300,20 +295,17 @@ def rotate2RTZ(stream, evname_key, ifverbose=False):
         substr.sort()
 
         # stream.rotate('NE->RT') #And then boom, obspy rotates everything!
+        stakey = '%s.%s.%s.%s' % (netw, station, location, chan)
+        #stakey = '%s' % substr[0].id
+        print('Working on station %s. Rotating ENZ to RTZ' % stakey)
         try:
             if ifverbose:
-                print('--> Station ' + netw + '.' + station + '.' + location + '.' + chan + \
-                          ' Rotating ENZ to RTZ.')
-                print('--->',substr[0].stats.channel, substr[0].stats.sac['cmpinc'], substr[0].stats.sac['cmpaz'], \
-                          substr[1].stats.channel, substr[1].stats.sac['cmpinc'],substr[1].stats.sac['cmpaz'], \
-                          substr[2].stats.channel, substr[2].stats.sac['cmpinc'], substr[2].stats.sac['cmpaz'])
+                print_rotation_parameters(substr)
 
             substr.rotate('NE->RT')
 
             if ifverbose:
-                print('--->',substr[0].stats.channel, substr[0].stats.sac['cmpinc'], substr[0].stats.sac['cmpaz'], \
-                          substr[1].stats.channel, substr[1].stats.sac['cmpinc'],substr[1].stats.sac['cmpaz'], \
-                          substr[2].stats.channel, substr[2].stats.sac['cmpinc'], substr[2].stats.sac['cmpaz'])
+                print_rotation_parameters(substr)
 
             # Fix cmpaz metadata for Radial and Transverse components
             for tr in substr.traces:
@@ -338,8 +330,23 @@ def rotate2RTZ(stream, evname_key, ifverbose=False):
                 tr.write(outfnam, format='SAC')
             
         except:
-            "Rotation failed, skipping..."
+            print ('ERROR. Rotation failed. Skipping (CHECK IF YOU WANT TO SKIP!)')
             continue
+
+def print_rotation_parameters(substr):
+    """ helper routine to pretty print+debug rotation parameters (use with before/after)
+    """
+    #for i in range(3):
+    #    print('%s cmpinc %7.2f cmpaz %7.2f' %
+    #        (substr[i].stats.channel,
+    #         substr[i].stats.sac['cmpinc'],
+    #         substr[i].stats.sac['cmpaz']))
+    print('Rotation parameters. channel dip azim: %s %s %s / %s %s %s /%s %s %s' % (
+            substr[0].stats.channel, substr[0].stats.sac['cmpinc'], substr[0].stats.sac['cmpaz'],
+            substr[1].stats.channel, substr[1].stats.sac['cmpinc'], substr[1].stats.sac['cmpaz'],
+            substr[2].stats.channel, substr[2].stats.sac['cmpinc'], substr[2].stats.sac['cmpaz']))
+
+    pass
 
 
 def write_cap_weights(stream, evname_key, client_name='', event='', ifverbose=False):
@@ -366,6 +373,7 @@ def write_cap_weights(stream, evname_key, client_name='', event='', ifverbose=Fa
     wdata = {}
 
     # for each station get and store arrival times, distance, azim
+    nsta = 0
     for tr in stream:
         current_sta = tr.stats
         # Only write once per 3 components
@@ -399,6 +407,10 @@ def write_cap_weights(stream, evname_key, client_name='', event='', ifverbose=Fa
         laststa = current_sta.station
         lastloc = current_sta.location
         lastcha = current_sta.channel[:-1]
+        nsta = nsta + 1
+    if nsta<1: 
+        print("STOP. No station data to process.")
+        sys.exit()
 
     infile = outdir + "/" + "staweights.tmp"
     if not os.path.isfile(infile):
@@ -500,10 +512,24 @@ def write_ev_info(ev, evname_key):
         ev.origins[0].latitude, ev.origins[0].depth / 1000.0,
         ev.magnitudes[0].mag))
 
-def add_sac_metadata(st, client_name="LLNL", ev=[], stalist=[], ifverbose=False, 
+def add_sac_metadata(st, client_name="LLNL", ev=[], inventory=[], ifverbose=False, 
                      taup_model = "ak135",phases=["P","P"], phase_write=False):
     """
-    Add event and station metadata to an Obspy stream
+    Add event and station metadata to an obspy Stream
+    method: 
+    1. for each station in Stream, find matching station in Inventory
+    2. get station info from Inventory into SAC header
+    3. get origin info from Event into SAC header
+    4. 
+    5. 
+    6. 
+
+    Refs
+    SAC headers: http://www.adc1.iris.edu/files/sac-manual/manual/file_format.html
+
+    TODO  
+        Separate into sections: Phase Picks, Instrument, Station, Event, etc.
+        (See SAC headers)
     """
     fid = open('traces_inventory_log', "w")
     out_form = ('%s %s %s %s %s %s %s %s %s')
@@ -516,7 +542,7 @@ def add_sac_metadata(st, client_name="LLNL", ev=[], stalist=[], ifverbose=False,
         # This is the best way to make sac objects (this is now done in getwaveform_iris.py)
         # tmptr = obspy.read('tmppp.sac').traces[0]
         # Loop over all the networks
-        for net in stalist:
+        for net in inventory:
             # Find the right station
             for stan in net:
                 # Hopefully there isn't more than one
@@ -553,7 +579,7 @@ def add_sac_metadata(st, client_name="LLNL", ev=[], stalist=[], ifverbose=False,
                 Ptime = pick.time - ev.origins[0].time
                 tr.stats.sac['a'] = Ptime
 
-        # !!!!Weird!!!
+        # otime to kevnm, tod
         tr.stats.sac['kevnm'] = \
             ev.origins[0].time.strftime('%Y%m%d%H%M%S%f')[:-3]
 
@@ -575,20 +601,34 @@ def add_sac_metadata(st, client_name="LLNL", ev=[], stalist=[], ifverbose=False,
         tmp = tr.stats.channel
         
         # match trace station info with the station inventory info
+        # 2022-02-28 NOT CLEAR WHAT THIS IS DOING. Match the following for what? 
+        # trace.stats.net.sta.loc.cha 
+        #   inventory.net.sta.loc.cha
         stn_in_inventory=0 
-        for net in stalist:
-            for stan in net.stations:
-                for ch in stan.channels:
-                    if tr.stats.channel == ch.code.upper() and \
-                            tr.stats.location == ch.location_code and \
-                            tr.stats.station == stan.code and \
-                            tr.stats.network == net.code:
+        for net in inventory:
+            for sta in net.stations:
+                for cha in sta.channels:
+                    ##-----------------------------------------------------------
+                    ##2022-03-02 TEMP BUG FIX -- NORSAR STATIONS DO NOT HAVE NETWORK CODE IN SCHEMA CSS3.0. WHAT.
+                    #if 'NO' in net.code.upper() and tr.stats.network != net.code:
+                    #    tr.stats.network = 'NO'  # 20220302 TODO FIX THIS IN CSS3.0? REPORTED TO ANDREASK WHO SAID WILL OPEN A MANTIS ISSUE.
+                    #    #print('WARNING TEMP BUG FIX. NEW NETWORK CODE IN INVENTORY: net.code %s' % net.code)
+                    #-----------------------------------------------------------
+                    if tr.stats.channel.upper()  == cha.code.upper() and \
+                       tr.stats.location.upper() == cha.location_code.upper() and \
+                       tr.stats.station.upper()  == sta.code.upper() and \
+                       tr.stats.network.upper()  == net.code.upper():
                         if ifverbose:
-                            print('--->', tr.stats.channel, ch.code, tr.stats.location, 
-                                  ch.location_code, tr.stats.station, stan.code, tr.stats.network, net.code)
-                            print('--->', net.code, stan.code, ch.location_code, ch.code, 'Azimuth:', ch.azimuth, 'Dip:', ch.dip) 
-                        tr.stats.sac['cmpinc'] = ch.dip
-                        tr.stats.sac['cmpaz'] = ch.azimuth
+                            print('--->', 
+                                  tr.stats.channel, cha.code, 
+                                  tr.stats.location, cha.location_code, 
+                                  tr.stats.station, sta.code, 
+                                  tr.stats.network, net.code)
+                            print('--->', net.code, sta.code, 
+                                    cha.location_code, cha.code, 
+                                    'Azimuth:', cha.azimuth, 'Dip:', cha.dip) 
+                        tr.stats.sac['cmpinc'] = cha.dip
+                        tr.stats.sac['cmpaz'] = cha.azimuth
                         stn_in_inventory=1   # trace does have inventory info
                         # Note: LLNL database does not have instruement response info or the sensor info
                         # Since units are different for Raw waveforms and after response is removed. This header is now set in getwaveform_iris.py
@@ -598,7 +638,13 @@ def add_sac_metadata(st, client_name="LLNL", ev=[], stalist=[], ifverbose=False,
                             #else:
                             #    scale_factor = tr.stats.sac['kuser0']
                             # tr.stats.sac['kuser0'] = 'M/S'
-                            sensor = ch.sensor.description
+                            # 2022-03-11 add try/except for some stations in RO net: AttributeError: 'NoneType' object has no attribute 'description'
+                            try:
+                                sensor = cha.sensor.description
+                            except Exception as e:
+                                print('WARNING. Unable to get channel.sensor.description. Sensor = %s. Using N/A' % cha.sensor)
+                                print(e)
+                                continue
                             # add sensor information
                             # SAC header variables can only be 8 characters long (except KEVNM: 16 chars)
                             # CAUTION: Using KT* instead to store instrument info (KT actually is for time pick identification)
@@ -619,11 +665,14 @@ def add_sac_metadata(st, client_name="LLNL", ev=[], stalist=[], ifverbose=False,
                                     # tr.stats.sac['kt'+str(header_tag)] = sensor[indx_start:indx_end]
                                     # TypeError: 'NoneType' object is not subscriptable
                                     tr.stats.sac['kt'+str(header_tag)] = 'N/A'
-                                    print('WARNING. Sensor = %s. Setting as N/A' % sensor)
-                                    print(stan)
+                                    print('WARNING. Unable to set channel.sensors.description. Sensor = %s. Using N/A' % cha.sensor)
+                                    #print(sta)
 
-
-        
+        if stn_in_inventory==0:
+            print('WARNING. no match in Inventory for station:', (tr.stats.network + tr.stats.station + tr.stats.location + tr.stats.channel))
+            print('WARNING. this station will be removed from the stream')
+            print('WARNING. reason: cannot assign sensor fields: dip, azimuth, description')
+         
         if phase_write:
             model = TauPyModel(model=taup_model)
             dist_deg = kilometer2degrees(tr.stats.sac['dist'],radius=6371)
@@ -684,9 +733,13 @@ def add_sac_metadata(st, client_name="LLNL", ev=[], stalist=[], ifverbose=False,
         # I don't even know
         tr.stats.sac['lcalda'] = 1
 
-    # Remove traces without inventory info
-    for tr in st_del:
-        st.remove(tr)
+    ## Remove traces without inventory info
+    ## 20220301 calvizuri --  disable for now.
+    ## 20220301 TODO add option in self to make this a user choice.
+    ##print('####### DEBUG. CHECK N TRACES, tr: ', len(st))
+    #for tr in st_del:
+    #    print('Removing trace: ', tr)
+    #    st.remove(tr)
 
     return st
 
@@ -920,7 +973,7 @@ def write_stream_sac_raw(stream_raw, path_to_waveforms,
         tr.stats.sac['kuser0'] = 'RAW'
 
     stream_raw = add_sac_metadata(stream_raw, client_name=client_name, 
-                                  ev=event, stalist=stations)
+                                  ev=event, inventory=stations)
 
     # write raw waveforms
     write_stream_sac(stream_raw, path_to_waveforms, evname_key)
@@ -1098,10 +1151,10 @@ def trim_maxstart_minend(stalist, st2, client_name, event, evtime,
             continue
         npts = int((min_endtime - max_starttime) * samprate)
         if ifverbose:
-            print("Old endpoints  %s - %s | %f Hz, %d samples" % (max_starttime, min_endtime, samprate, npts))
+            print("%15s. Old endpoints  %s - %s | %6.1f Hz, %8d samples" % (station_key, max_starttime, min_endtime, samprate, npts))
         npts = int((min_endtime - max_starttime) * resample_freq)
         if ifverbose:
-            print("New endpoints  %s - %s | %f Hz, %d samples" % (max_starttime, min_endtime, resample_freq, npts))
+            print("%15s. New endpoints  %s - %s | %6.1f Hz, %8d samples" % (station_key, max_starttime, min_endtime, resample_freq, npts))
 
         # APPLY TRIM COMMAND
         try:
@@ -1218,7 +1271,7 @@ def amp_rescale_llnl(st, scale_factor):
                     (station_key, scale_factor_HG))
             tr.data = tr.data * scale_factor_HG
             tr.stats.sac['scale'] = scale_factor_HG * scale_factor
-        elif (tr.stats.channel is 'R') or (tr.stats.channel is 'T') or (tr.stats.channel is 'V') :
+        elif (tr.stats.channel == 'R') or (tr.stats.channel == 'T') or (tr.stats.channel == 'V') :
             print("--> WARNING LLNL station %14s Rescaling by %f" % \
                     (station_key, scale_factor_XX))
             tr.data = tr.data * scale_factor_XX
@@ -1308,12 +1361,12 @@ def resp_plot_remove(st, ipre_filt, pre_filt, iplot_response, water_level,
     TODO consider separating the remove and plot functions
     """
 
-    print("\nRemove instrument response")
+    print("\nREMOVE INSTRUMENT RESPONSE\n")
     for tr in st:
         station_key = "%s.%s.%s.%s" % (tr.stats.network, tr.stats.station,\
                 tr.stats.location, tr.stats.channel)
 
-        if ipre_filt is 0 or ipre_filt is 1:
+        if ipre_filt == 0 or ipre_filt == 1:
             pre_filt = get_pre_filt(ipre_filt, tr) 
 
         # Plot or remove instrument response but not both.
@@ -1341,7 +1394,7 @@ def resp_plot_remove(st, ipre_filt, pre_filt, iplot_response, water_level,
                 tr.remove_response(inventory=stations, water_level=water_level, pre_filt=pre_filt, \
                         output=outformat)
             except Exception as e:
-                print("Failed to correct %s due to: %s" % (tr.id, str(e)))
+                print("WARNING. FATAL. Failed to correct %s due to: %s" % (tr.id, str(e)))
 
         # update units after scale factor is removed
         _units_after_response(tr, scale_factor, outformat)
@@ -1354,7 +1407,7 @@ def do_waveform_QA(stream, client_name, event, evtime, before, after):
     - fill in missing data
     """
 
-    print("\nQUALITY CHECK!")
+    print("\nQUALITY CHECK!\n")
 
     output_log = ("data_processing_status_%s.log" % client_name)
     fid = open(output_log, "w")
@@ -1440,15 +1493,18 @@ def do_waveform_QA(stream, client_name, event, evtime, before, after):
     stream.merge(fill_value='interpolate')
 
     # remove stations (part 2 of 2), this time if npts_actual < npts_expected
-    print("Checking stations where npts_actual < npts_expected ...")
+    print("Checking data downloaded: npts_actual and npts_expected ...")
     for tr in stream:
         station_key = "%s.%s.%s.%s" % (tr.stats.network, tr.stats.station,\
                 tr.stats.location, tr.stats.channel)
         npts_expected = tr.stats.sampling_rate * (before + after)
+        ipercent = 100.0*(tr.stats.npts / npts_expected)
         if tr.stats.npts < npts_expected:
-            print("WARNING station %14s Data available < (before + after). Consider removing this station" 
-                    % station_key)
-            print(tr.stats.npts,'<',tr.stats.sampling_rate * (before + after))
+            #print("WARNING station %14s Data available < (before + after). Consider removing this station" 
+            #        % station_key)
+            #print(tr.stats.npts,'<', npts_expected)
+            print('WARNING. %14s: %5.1f%% data available. Consider removing this station. Requested: %d. Obtained: %d' %\
+                    (station_key, ipercent, npts_expected, tr.stats.npts))
             fid.write(" -- data missing")
 
             ## remove waveforms with missing data
@@ -1485,10 +1541,14 @@ def do_waveform_QA(stream, client_name, event, evtime, before, after):
 def rotate2UVW_station(st,evname_key):
     """
     Rotate to UVW orthogonal frame.
-    In Symmetric Triaxial Seismometers, the sensing elements are also arranged to be mutually orthogonal, but instead of one axis being vertical, all three are inclined upwards from the horizontal at precisely the same angle, as if they were aligned with the edges of a cube balanced on a corner.
+    In Symmetric Triaxial Seismometers, the sensing elements are also arranged
+    to be mutually orthogonal, but instead of one axis being vertical, all
+    three are inclined upwards from the horizontal at precisely the same angle,
+    as if they were aligned with the edges of a cube balanced on a corner.
     Reference:
     http://link.springer.com/referenceworkentry/10.1007/978-3-642-36197-5_194-1
     """
+    print('Inside function rotate2UVW_station')
     outdir = evname_key + '/UVW'
     d1 = st[0].data
     d2 = st[1].data

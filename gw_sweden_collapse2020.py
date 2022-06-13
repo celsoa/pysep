@@ -6,10 +6,10 @@ def get_ev_info(ev_info,iex):
 # ===============================================================
     if iex == 0:
         # DATA PREPARATION / PROCESSING
-        ev_info.idb = 1     # 1 = IRIS. % 20220223 calvizuri -- seems needed. not sure why I removed it previously. TODO revise conditional tests in getwaveform to deprecate this, if that's the goal
         ev_info.use_catalog = 0
         ev_info.ifmass_downloader = True
         #ev_info.iris_federator = True
+        ev_info.idb = 1 # 1 IRIS
         ev_info.ifverbose = True    # output all proccessing steps
 
         #keep stations with missing components and fill the missing component with a null trace (MPEN)
@@ -25,19 +25,19 @@ def get_ev_info(ev_info,iex):
         ev_info.isave_ENZ = False
 
         # EVENT INFO
-        #2021-02-24T10:05:57.024000Z -22.20764 63.91658 1.098 5.72
-        ev_info.otime = obspy.UTCDateTime("2021-02-24T10:05:57.024000Z")
-        ev_info.elon = -22.20764
-        ev_info.elat = 63.91658
-        ev_info.edep = 1098 
-        ev_info.emag = 4.6
+        # 67.826°N 20.267°E 1.0 km depth , https://earthquake.usgs.gov/earthquakes/eventpage/us70009ja2/technical
+        ev_info.otime = obspy.UTCDateTime("2020-05-18T01:11:56") # 2020-05-18 01:11:56
+        ev_info.elon = 20.267
+        ev_info.elat = 67.826
+        ev_info.edep = 1000
+        ev_info.emag = 4.9
 
         ev_info.min_dist = 0
-        ev_info.max_dist = 2000
+        ev_info.max_dist = 1000
         ev_info.tbefore_sec = 100
         ev_info.tafter_sec = 500
 
-        ev_info.channel = 'BH?'
+        ev_info.channel = 'BH?,HH?'
         ev_info.resample_TF = True
         ev_info.resample_freq = 20
         ev_info.scale_factor = 100

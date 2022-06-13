@@ -196,7 +196,9 @@ class getwaveform:
 
         #-----------------------------------------------------------
         # BEGIN OPTIONS MASS DOWNLOADER
-        if self.ifmass_downloader is True:
+        #-----------------------------------------------------------
+        #if self.ifmass_downloader is True:
+        if self.idb is not None and self.ifmass_downloader is True:
             domain = CircularDomain(
                     latitude =self.elat, 
                     longitude=self.elon,
@@ -247,9 +249,12 @@ class getwaveform:
             t1s, t2s= get_phase_arrival_times(inventory,event,self.phases,
                                               self.phase_window,self.taupmodel,
                                               reftime,self.tbefore_sec,self.tafter_sec)
-        # END MASS DOWNLOADER
+        # End mass downloader
         #-----------------------------------------------------------
 
+        #-----------------------------------------------------------
+        # Pick client
+        #-----------------------------------------------------------
         # Add deprecation warning
         if self.idb is not None:
             print('WARNING: Instead of idb use which client you want to use \n'\
@@ -260,7 +265,7 @@ class getwaveform:
         if self.client_name != "LLNL" and self.ifmass_downloader is False:
             # Send request to client
             # There might be other way to do this using 'RoutingClient'
-            print("DATABASE >>> Sending request to",self.client_name,"client for data")
+            print("Sending request to client: %s" % self.client_name)
             c = self.client
             print(c)
             
@@ -283,8 +288,10 @@ class getwaveform:
                                        },
                                        debug=True
                                    )
-            #-------------------
+
+            #-----------------------------------------------------------
             # Download stations
+            #-----------------------------------------------------------
             print("Download stations...")
             stations = c.get_stations(network=self.network, location=self.location,
                                       station=self.station, channel=self.channel,
@@ -375,14 +382,26 @@ class getwaveform:
                     stream_raw.append(tr)
     
         # set reftime
+        #inventory = stations
         stream = obspy.Stream()
         stream = set_reftime(stream_raw, evtime)
-        
+
+        nsta = len(stream)
+        if nsta < 1:
+            print('STOP. No waveforms to process. N stations = %d\n' % nsta)
+            sys.exit()
+
         print("--> Adding SAC metadata...")
         if self.ifverbose: print(stream.__str__(extended=True))
         st2 = add_sac_metadata(stream, client_name=self.client_name, ev=event, 
-                               stalist=inventory, taup_model= self.taupmodel, 
-                               phases=phases, phase_write = self.write_sac_phase)
+                               inventory=inventory, taup_model= self.taupmodel, 
+                               )
+                                # 2022-03-10 CHECK IF NEEDED: stalist=inventory.
+                                # phases=phases, phase_write = self.write_sac_phase)
+        print('stalist inventory', inventory)
+        if(len(st2)<1):
+            print('STOP. No waveforms left to process.')
+            sys.exit()
         
         # Do some waveform QA
         do_waveform_QA(st2, self.client_name, event, evtime, 
@@ -443,13 +462,15 @@ class getwaveform:
 
         #  Resample
         if self.resample_TF == True:
+            print('\nRESAMPLING DATA\n')
+            print("New sample rate %f Hz" % self.resample_freq)
             # NOTE !!! tell the user if BOTH commands are disabled NOTE !!!
             if (self.client_name == "IRIS"):
                 resample(st2, freq=self.resample_freq)
             elif (self.client_name == "LLNL"):
                 resample_cut(st2, self.resample_freq, evtime, self.tbefore_sec, self.tafter_sec)
         else:
-            print("WARNING. Will not resample. Using original rate from the data")
+            print("WARNING. Will not resample. Using original rate from the data: %f Hz" % self.resample_freq)
 
         # match start and end points for all traces
         st2 = trim_maxstart_minend(stalist, st2, self.client_name, event, evtime, 
@@ -486,6 +507,7 @@ class getwaveform:
         #if self.rotateENZ:
         #st2 = rotate2ENZ(st2, evname_key, self.isave_ENZ, self.icreateNull, self.ifverbose)
 
+        print ('\nBEGIN ROTATE COMPONENTS')
         if self.rotateENZ:
             st2 = rotate2ENZ(st2, evname_key, self.isave_ENZ, self.icreateNull, self.ifverbose)
 
@@ -497,7 +519,6 @@ class getwaveform:
         if self.rotateRTZ:
             rotate2RTZ(st2, evname_key, self.ifverbose) 
             
-
         # save CAP weight files
         if self.output_cap_weight_file:
             write_cap_weights(st2, evname_key, self.client_name, event, self.ifverbose)
@@ -533,6 +554,8 @@ class getwaveform:
             nez_asdf_filename = nez_dir + evname_key + ".h5"
             os.system("../asdf_converters/asdf_converters/sac2asdf.py "
                       + nez_dir + " " + nez_asdf_filename + " observed")
+
+        print ('\nDone processing waveform data for event %s' % evname_key)
             
 
     def copy(self):
