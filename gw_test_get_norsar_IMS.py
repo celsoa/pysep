@@ -29,7 +29,7 @@ def get_ev_info(ev_info,iex):
         # NK6m nk paper alvizuri-tape
         #  2017/09/03 03:38:31.8100  129.078  41.300
         #ev_info.otime = obspy.UTCDateTime("2017-09-03T03:38:31.8100")
-        ev_info.otime = obspy.UTCDateTime("2017-09-03T03:30:01.760")
+        ev_info.otime = obspy.UTCDateTime("2017-09-03T03:30:01.760") # NK6 main event
         ev_info.elon = 129.078
         ev_info.elat = 41.300
         ev_info.edep = 0
