@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 #
-#
 
 """
 Code to get IMS waveforms and correct for instrument response.
@@ -23,7 +22,7 @@ from seismonpy.utils.ims_request import IMS_Client as Client
 #-----------------------------------------------------------\
 path_to_nms_client = '/nobackup/celso/REPOSITORIES/IMS-nms_client3/nms_client3'
 station = "USRK"
-channel = "BHZ"
+channel = "*"
 t1 = UTCDateTime('2022-07-07T00:00:00')
 t2 = UTCDateTime('2022-07-07T01:00:00')
 #-----------------------------------------------------------\
@@ -64,37 +63,45 @@ print(resp)
 #	                Stage 8: FIRResponseStage from COUNTS to COUNTS, gain: 1
 
 
-#-----------------------------------------------------------
-# CORRECTING FOR RESPONSE WITH OBSPY WORKS DIRECTLY WITH THIS COMMAND
-# (ultimately this is the command needed)
-# tr.remove_response(inventory=stations, water_level=water_level, pre_filt=pre_filt, output=outformat)
-#
-# WITH SEISMONPY IT DOESN'T WORK
-# See the following examples
-# TODO Check with Andreas K / Hakon
-# 2022-07-08
-#-----------------------------------------------------------
+#       #===========================================================
+#       # CORRECTING FOR RESPONSE WITH OBSPY WORKS DIRECTLY WITH THE FOLLOWING COMMAND
+#       # (This is the command needed)
+#       # tr.remove_response(inventory=stations, water_level=water_level, pre_filt=pre_filt, output=outformat)
+#       #
+#       # WITH SEISMONPY IT DOESN'T WORK
+#       # See the following examples
+#       # TODO Check with Andreas K / Hakon
+#       # 2022-07-08
+#       #-----------------------------------------------------------
+#       
+#       # TRY TO REMOVE INSTRUMENT RESPONSE FROM STREAM 
+#       print('TRY STREAM 1')  # doesnt work with seismonpy. # ValueError: No matching response information found.
+#       st.remove_response(inventory)
+#       
+#       print('TRY STREAM 2')  # doesnt work with seismonpy. # ValueError: No matching response information found.
+#       st.remove_response(inventory, t1)
+#       
+#       print('TRY STREAM 3')  # doesnt work with seismonpy
+#       #st.remove_response(inventory[0].get_response('USRK.USA0B..BHZ', t1))    # Exception: No matching response information found.
+#       st.remove_response(inventory[0].get_response('IM.USA0B..BHZ', t1))      # TypeError: 'Response' object is not iterable
+#       
+#       ## TRY TO REMOVE INSTRUMENT RESPONSE FROM TRACE
+#       tr = st[0]  # Out[179]: USRK.USA0B..BHZ | 2022-07-07T00:00:00.000000Z - 2022-07-07T00:59:59.975000Z | 40.0 Hz, 144000 samples
+#       print('TRY TRACE 1')  # doesnt work with seismonpy. # TypeError: 'Response' object is not iterable
+#       tr.remove_response(inventory=inv0.get_response('IM.USA0B..BHZ', t1), output='VEL', water_level=60, pre_filt=None, zero_mean=True, taper=True, taper_fraction=0.05, plot=False, fig=None)
+#       
+#       print('TRY TRACE 2')  # doesnt work with seismonpy. # Exception: No matching response information found.
+#       tr.remove_response(inventory=inv0.get_response('USRK.USA0B..BHZ', t1), output='VEL', water_level=60, pre_filt=None, zero_mean=True, taper=True, taper_fraction=0.05, plot=False, fig=None)
+#       #===========================================================
 
-## CORRECT RESPONSE FROM STREAM 
-#print('TRY STREAM 1')  # doesnt work with seismonpy
-## ValueError: No matching response information found.
-#st.remove_response(inventory)
+# TEMP FIX: replace network name in the stream for all
+for tr in st:
+    tr.stats.network = 'IM'
 
-#print('TRY STREAM 2')  # doesnt work with seismonpy
-## ValueError: No matching response information found.
-#st.remove_response(inventory, t1)
+# 2022-07-11 13:33 issue fixed; removing response now works
+st.remove_response(inventory)
 
-print('TRY STREAM 3')  # doesnt work with seismonpy
-#st.remove_response(inventory[0].get_response('USRK.USA0B..BHZ', t1))    # Exception: No matching response information found.
-st.remove_response(inventory[0].get_response('IM.USA0B..BHZ', t1))      # TypeError: 'Response' object is not iterable
+for tr in st:
+    tr.plot()
 
-## CORRECT RESPONSE FROM TRACE
-tr = st[0]  # Out[179]: USRK.USA0B..BHZ | 2022-07-07T00:00:00.000000Z - 2022-07-07T00:59:59.975000Z | 40.0 Hz, 144000 samples
-print('TRY TRACE 1')  # doesnt work with seismonpy
-# TypeError: 'Response' object is not iterable
-tr.remove_response(inventory=inv0.get_response('IM.USA0B..BHZ', t1), output='VEL', water_level=60, pre_filt=None, zero_mean=True, taper=True, taper_fraction=0.05, plot=False, fig=None)
-
-print('TRY TRACE 2')  # doesnt work with seismonpy
-# Exception: No matching response information found.
-tr.remove_response(inventory=inv0.get_response('USRK.USA0B..BHZ', t1), output='VEL', water_level=60, pre_filt=None, zero_mean=True, taper=True, taper_fraction=0.05, plot=False, fig=None)
-
+print('done!')
