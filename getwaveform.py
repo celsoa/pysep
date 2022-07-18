@@ -380,7 +380,67 @@ class getwaveform:
             for tr in _st:
                 if tr.stats.station in stations:
                     stream_raw.append(tr)
-    
+
+        # 20220718 TODO: ADD OPTION FOR CLIENT NORSAR-SEISMONPY
+        # CODE HERE
+
+        # 2022-07-18 INTERFACE NORSAR-SEISMONPY AND IMS-NMS CLIENT
+        elif self.client_name == "IMS-SMP" and self.ifmass_downloader is False:
+            ## 20220224 calvizuri --  TEST 
+            #from seismonpy.norsardb import Client as NORclient
+            # 2022-07-12 TRY2
+            from seismonpy.utils.ims_request import IMS_Client
+
+            path_to_nms_client = '/nobackup/celso/REPOSITORIES/IMS-nms_client3/nms_client3'
+            NORclient = IMS_Client(nms_path=path_to_nms_client)
+
+            print("\nPreparing request for IMS data ...")
+            #NORclient = NORclient()
+            starttime = reftime - self.tbefore_sec
+            endtime   = reftime + self.tafter_sec
+            print("IMS-SMP client: requesting station data for network/station/channel(s): %s/%s/%s ..." % (self.network, self.station, self.channel))
+            #self.network = "NOA" # doesn't work because info not in the norsar CSS, right?
+            #self.array = "USRK"
+            stations = NORclient.get_stations(network = self.network, 
+                                         station    = self.station, 
+                                         channel    = self.channel,
+                                         starttime  = starttime, 
+                                         endtime    = endtime,
+                                         longitude  = self.elon,
+                                         latitude   = self.elat,
+                                         minradius  = self.min_dist,
+                                         maxradius  = self.max_dist,
+                                         use_cache  = True,
+                                         #cache_file = '/nobackup/celso/REPOSITORIES/pysep-dev-IMS/ims_full_inventory.p'
+                                         )
+            print("IMS-SMP client: done. Stations: ", stations)
+            # 2022-03-02 may not need the following - 
+            #inventory = NORclient.get_array_inventory("ARCES", time=starttime)
+            #inventory = NORclient.get_array_inventory("NOA", time=starttime)
+            #print("DEBUG. done. inventory: ", inventory)
+            #stream_raw = NORclient.get_waveforms("NAO01", "BHZ", UTCDateTime(2017, 10, 29, 1, 0, 0), UTCDateTime(2017, 10, 29, 1, 0, 0)+3600)
+            # 
+            # OPTIOM 3 -faster? read_inventor(path2/db/inventory_seed..etc)
+            #
+            print("IMS-SMP client: fetching waveform data ...")
+            #stream_raw = NORclient.get_waveforms("AR{A,B,C}*", "BHZ", starttime, endtime, attach_response=True) 
+            #print("DDDDDDDDDDDDDDDDDD", starttime, endtime) = 2017-09-03T03:28:21.760000Z 2017-09-03T04:03:21.760000Z
+            # USA0B
+            #stream_raw = NORclient.get_waveforms(self.station, self.channel, starttime, endtime)
+            stream_raw = NORclient.get_waveforms(stations, self.channel, starttime, endtime)
+            print('TEST1', stations)
+            print('TEST2', stream_raw)
+            #stream_raw = NORclient.get_array_waveforms("ARCES", "BHZ", starttime, endtime)  # TEST 2022-03-02. issue with ARCES: ValueError: did not find matching array 
+            #stream_raw = NORclient.get_array_waveforms("NOA", "*Z", starttime, endtime)     # TEST 2022-03-02. same issue as above but with NOA array
+            #print("IMS-SMP client: done. Waveforms: ", stream_raw.__str__(extended=True))
+
+        ## OBSPY ROUTINES TO CONVERT STREAM 
+        ## ~/miniconda3/envs/seismonpy_dev/lib/python3.7/site-packages/obspy/io/sac/sactrace.py
+        ## https://docs.obspy.org/master/packages/autogen/obspy.io.sac.sactrace.html?highlight=sactrace#module-obspy.io.sac.sactrace
+        #sachdr = _io.header_arrays_to_dict(self._hf, self._hi, self._hs,
+        #                                   nulls=debug_headers,
+        #                                   encoding=encoding)
+        #stats = _ut.sac_to_obspy_header(sachdr)
         # set reftime
         inventory = stations
         stream = obspy.Stream()
@@ -420,6 +480,16 @@ class getwaveform:
                     self.iplot_response, self.water_level,
                     self.scale_factor, 
                     inventory, self.outformat, self.ifverbose)
+        # 20220718 TODO: ADD OPTION FOR CLIENT NORSAR-SEISMONPY
+        #if self.remove_response and self.client_name != "NORSAR":
+        #elif self.remove_response and self.client_name == "NORSAR":
+        #    #response_remove_NORSAR(st2, self.ipre_filt, self.pre_filt, 
+        #    response_remove_NORSAR(st2, self.ipre_filt, self.pre_filt, 
+        #            self.iplot_response, self.water_level,
+        #            self.scale_factor, 
+        #            inventory, self.outformat, self.ifverbose)
+        #        #tr.remove_response(inventory=stations, water_level=water_level, pre_filt=pre_filt, \
+        #        #        output=outformat)
         else:
             # output RAW waveforms
             decon=False
@@ -614,6 +684,7 @@ class getwaveform:
         '''
 
         # IRIS
+        # 20220718 TODO: ADD OPTION FOR CLIENT NORSAR-SEISMONPY (LOCALLY ACCESSIBLE NORSAR DATA)
         if self.client_name != "LLNL":
             # import functions to access waveforms
             if not self.user and not self.password:
@@ -623,6 +694,21 @@ class getwaveform:
                                      password=self.password, debug=True, timeout=600)
                 # will only work for events in the 'IRIS' catalog
                 # (future: for Alaska events, read the AEC catalog)
+
+            # get event object
+            self.get_event_object()
+
+            # use a different reference time and place for station subsetting
+            if self.rlat is not None:
+                self.reference_time_place()
+            # or use reference same as the origin
+            else:
+                self.ref_time_place = self.ev
+        # 20220718 TODO: ADD OPTION FOR CLIENT NORSAR-SEISMONPY
+        # Option for INTERFACE NORSAR-SEISMONPY AND IMS-NMS CLIENT
+        if self.client_name == "IMS-SMP":
+            #self.client = NORclient(self.client_name)
+            #self.client = client()
 
             # get event object
             self.get_event_object()
