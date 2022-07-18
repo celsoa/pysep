@@ -382,7 +382,7 @@ class getwaveform:
                     stream_raw.append(tr)
     
         # set reftime
-        #inventory = stations
+        inventory = stations
         stream = obspy.Stream()
         stream = set_reftime(stream_raw, evtime)
 
@@ -391,14 +391,12 @@ class getwaveform:
             print('STOP. No waveforms to process. N stations = %d\n' % nsta)
             sys.exit()
 
-        print("--> Adding SAC metadata...")
-        if self.ifverbose: print(stream.__str__(extended=True))
+        # ADD SAC METADATA
         st2 = add_sac_metadata(stream, client_name=self.client_name, ev=event, 
                                inventory=inventory, taup_model= self.taupmodel, 
                                )
-                                # 2022-03-10 CHECK IF NEEDED: stalist=inventory.
-                                # phases=phases, phase_write = self.write_sac_phase)
-        print('stalist inventory', inventory)
+                               #phases=phases, phase_write = self.write_sac_phase)
+        print('done adding SAC metadata. stalist inventory:\n', inventory)
         if(len(st2)<1):
             print('STOP. No waveforms left to process.')
             sys.exit()
@@ -440,7 +438,7 @@ class getwaveform:
         st2, evname_key = rename_if_LLNL_event(st2, evtime)
         self.evname = evname_key
 
-        # save station plot
+        # SAVE STATION PLOT
         # Note: Plotted are stations in the inventory and NOT the ones with the traces
         # It could be possible that there might not be waveforms for some of these stations.
         try:
@@ -507,7 +505,7 @@ class getwaveform:
         #if self.rotateENZ:
         #st2 = rotate2ENZ(st2, evname_key, self.isave_ENZ, self.icreateNull, self.ifverbose)
 
-        print ('\nBEGIN ROTATE COMPONENTS')
+        print ('\nBEGIN ROTATE COMPONENTS ...')
         if self.rotateENZ:
             st2 = rotate2ENZ(st2, evname_key, self.isave_ENZ, self.icreateNull, self.ifverbose)
 
@@ -555,8 +553,7 @@ class getwaveform:
             os.system("../asdf_converters/asdf_converters/sac2asdf.py "
                       + nez_dir + " " + nez_asdf_filename + " observed")
 
-        print ('\nDone processing waveform data for event %s' % evname_key)
-            
+        print ('\nDone. Waveform data saved to directory %s/\n' % evname_key)
 
     def copy(self):
         '''
