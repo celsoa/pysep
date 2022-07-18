@@ -25,6 +25,20 @@ import math
 from obspy.clients.fdsn.mass_downloader import CircularDomain, \
     RectangularDomain, Restrictions, MassDownloader
 
+def checkpoint():
+    """TODO: Docstring for checkpoint.
+
+    :arg1: TODO
+    :returns: TODO
+
+    """
+    yesno = input('continue? (y/n)\n')
+    if 'y' in yesno.lower(): 
+        pass
+    else: 
+        print('stopped.'); sys.exit()
+    pass
+
 class getwaveform:
     def __init__(self):
         """
@@ -262,7 +276,8 @@ class getwaveform:
             if self.idb == 3:
                 self.client_name = "LLNL"
             
-        if self.client_name != "LLNL" and self.ifmass_downloader is False:
+        # 2022-07-18 TEST USE INSTEAD: if self.client_name != "LLNL" and self.ifmass_downloader is False:
+        if self.client_name != "LLNL" and self.client_name != "NORSAR" and self.ifmass_downloader is False:
             # Send request to client
             # There might be other way to do this using 'RoutingClient'
             print("Sending request to client: %s" % self.client_name)

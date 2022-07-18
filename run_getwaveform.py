@@ -67,7 +67,7 @@ def getargs():
 if __name__ == '__main__':
     args = getargs()
 
-    print("Running example iex =", args.iex)
+    print("\nrun_getwaveform: running example iex: ", args.iex)
 
     # =============================================================================
     # Get extraction info
