@@ -159,7 +159,6 @@ def rotate2ENZ(stream, evname_key, isave_ENZ=True, icreateNull=False, ifverbose 
             else:
                 print('\nWARNING: No usable components found. Skipping (CHECK IF YOU WANT TO SKIP THIS STATION. ELSE NEED MORE CODE!)\n')
                 continue
-        print('substream: ', substr)
 
         # Rotate to NEZ first
         # Sometimes channels are not orthogonal (example: 12Z instead of NEZ)
@@ -222,6 +221,7 @@ def rotate2ENZ(stream, evname_key, isave_ENZ=True, icreateNull=False, ifverbose 
 
         if ifverbose:
             print_rotation_parameters(substr)
+            print('substream: ', substr)
 
         # save NEZ waveforms
         if isave_ENZ:
