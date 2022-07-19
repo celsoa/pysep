@@ -110,7 +110,6 @@ def rotate2ENZ(stream, evname_key, isave_ENZ=True, icreateNull=False, ifverbose 
             if len(components) < 3:
                 print('WARNING: missing component(s): available: ', components)
                 print('WARNING: will create trace(s) with null values for the missing components')
-                print('Substream: ', substr)
 
             # 2021-05-19 fixed: use permutation in case components not always in same order.
             # Maybe use itertools to apply each permutations.
@@ -160,6 +159,7 @@ def rotate2ENZ(stream, evname_key, isave_ENZ=True, icreateNull=False, ifverbose 
             else:
                 print('\nWARNING: No usable components found. Skipping (CHECK IF YOU WANT TO SKIP THIS STATION. ELSE NEED MORE CODE!)\n')
                 continue
+        print('substream: ', substr)
 
         # Rotate to NEZ first
         # Sometimes channels are not orthogonal (example: 12Z instead of NEZ)
@@ -546,27 +546,44 @@ def add_sac_metadata(st, client_name="LLNL", ev=[], inventory=[], ifverbose=Fals
     fid = open('traces_inventory_log', "w")
     out_form = ('%s %s %s %s %s %s %s %s %s')
 
-    st_del= obspy.Stream() # stream for collecting traces that are to be removed - traces not in the inventory
-    # Loop over each trace
-    for tr in st.traces:
+    # stream for collecting traces that are to be removed - traces not in the inventory
+    # 20220719 TODO: create separate function that checks Inventory vs Stream and deals with this separately
+    # eg: check_matching_stations(inventory, stream); if sta_not_found: print/log warning
+    st_del= obspy.Stream() 
+    for tr in st:
+        #sac = SACTrace.from_obspy_trace(tr)
+        #tr = sac.to_obspy_trace(tr)
+        stakey = '%s.%s.%s.%s' % (tr.stats.network, tr.stats.station, tr.stats.location, tr.stats.channel)
+        print('working on:', stakey)
         # Write each one
         # tr.write('tmppp.sac', format='SAC')
         # This is the best way to make sac objects (this is now done in getwaveform_iris.py)
         # tmptr = obspy.read('tmppp.sac').traces[0]
-        # Loop over all the networks
-        for net in inventory:
-            # Find the right station
-            for stan in net:
-                # Hopefully there isn't more than one
-                if tr.stats.station == stan.code:
-                    sta = stan
+        sta = None
+        
+        # 20220718 MATCH STATIONS BETWEEN INVENTORY-STREAM 
+        # OPTION 1: for each trace in stream, iterate over Inventory, Network, Station, Channel
+        #for net in inventory:
+        #    for stan in net:
+        #    # Find the right station
+        #        # Hopefully there isn't more than one
+        #        if tr.stats.station == stan.code:
+        #            sta = stan  # sta is type Station
+        # OPTION 2: use obspy's built-in functions 
+        sta = inventory.select(station=tr.stats.station).get_channel_metadata(seed_id=stakey)
+
+        if sta is None or sta == []:
+            print('WARNING: %s: no match in Inventory. This may result in problems later in the processing' % stakey)
         # tr.stats.sac = tmptr.stats.sac
 
         # Station info
-        tr.stats.sac['stla'] = sta.latitude
-        tr.stats.sac['stlo'] = sta.longitude
+        #tr.stats.sac['stla'] = sta.latitude
+        #tr.stats.sac['stlo'] = sta.longitude
+        tr.stats.sac['stla'] = sta['latitude']
+        tr.stats.sac['stlo'] = sta['longitude']
         # Change to kilometers
-        tr.stats.sac['stel'] = sta.elevation / 1000.0
+        #tr.stats.sac['stel'] = sta.elevation / 1000.0
+        tr.stats.sac['stel'] = sta['elevation'] / 1000.0
 
         # Event info
         tr.stats.sac['evla'] = ev.origins[0].latitude
