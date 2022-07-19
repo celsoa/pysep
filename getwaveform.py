@@ -277,7 +277,8 @@ class getwaveform:
                 self.client_name = "LLNL"
             
         # 2022-07-18 TEST USE INSTEAD: if self.client_name != "LLNL" and self.ifmass_downloader is False:
-        if self.client_name != "LLNL" and self.client_name != "NORSAR" and self.ifmass_downloader is False:
+        #if self.client_name != "LLNL" and self.client_name != "NORSAR" and self.ifmass_downloader is False:
+        if self.client_name != "LLNL" and self.client_name != "IMS-SMP" and self.ifmass_downloader is False:
             # Send request to client
             # There might be other way to do this using 'RoutingClient'
             print("Sending request to client: %s" % self.client_name)
@@ -396,27 +397,46 @@ class getwaveform:
                 if tr.stats.station in stations:
                     stream_raw.append(tr)
 
+        #-----------------------------------------------------------
         # 20220718 TODO: ADD OPTION FOR CLIENT NORSAR-SEISMONPY
-        # CODE HERE
-
-        # 2022-07-18 INTERFACE NORSAR-SEISMONPY AND IMS-NMS CLIENT
-        elif self.client_name == "IMS-SMP" and self.ifmass_downloader is False:
+        #-----------------------------------------------------------
             ## 20220224 calvizuri --  TEST 
             #from seismonpy.norsardb import Client as NORclient
             # 2022-07-12 TRY2
+            #
+            ## THE FOLLOWING SNIPPETS WERE MOVED FROM THE SMP-IMS CLIENT WHICH
+            ## EVOLVED FROM OLD SNIPPETS FOR THE NORSAR CLIENT
+            #
+            # 2022-03-02 may not need the following - 
+            #inventory = IMSclient.get_array_inventory("ARCES", time=starttime)
+            #inventory = IMSclient.get_array_inventory("NOA", time=starttime)
+            #print("DEBUG. done. inventory: ", inventory)
+            #stream_raw = IMSclient.get_waveforms("NAO01", "BHZ", UTCDateTime(2017, 10, 29, 1, 0, 0), UTCDateTime(2017, 10, 29, 1, 0, 0)+3600)
+            # 
+            # OPTIOM 3 -faster? read_inventor(path2/db/inventory_seed..etc)
+            #
+            #stream_raw = IMSclient.get_waveforms("AR{A,B,C}*", "BHZ", starttime, endtime, attach_response=True) 
+            #print("DDDDDDDDDDDDDDDDDD", starttime, endtime) = 2017-09-03T03:28:21.760000Z 2017-09-03T04:03:21.760000Z
+            # USA0B
+            #stream_raw = IMSclient.get_array_waveforms("ARCES", "BHZ", starttime, endtime)  # TEST 2022-03-02. issue with ARCES: ValueError: did not find matching array 
+            #stream_raw = IMSclient.get_array_waveforms("NOA", "*Z", starttime, endtime)     # TEST 2022-03-02. same issue as above but with NOA array
+            #print("IMS-SMP client: done. Waveforms: ", stream_raw.__str__(extended=True))
+        #===========================================================
+
+        #-----------------------------------------------------------
+        # 2022-07-18 INTERFACE NORSAR-SEISMONPY AND IMS-NMS CLIENT
+        #-----------------------------------------------------------
+        elif self.client_name == "IMS-SMP" and self.ifmass_downloader is False:
             from seismonpy.utils.ims_request import IMS_Client
 
             path_to_nms_client = '/nobackup/celso/REPOSITORIES/IMS-nms_client3/nms_client3'
-            NORclient = IMS_Client(nms_path=path_to_nms_client)
+            IMSclient = IMS_Client(nms_path=path_to_nms_client)
 
             print("\nPreparing request for IMS data ...")
-            #NORclient = NORclient()
             starttime = reftime - self.tbefore_sec
             endtime   = reftime + self.tafter_sec
             print("IMS-SMP client: requesting station data for network/station/channel(s): %s/%s/%s ..." % (self.network, self.station, self.channel))
-            #self.network = "NOA" # doesn't work because info not in the norsar CSS, right?
-            #self.array = "USRK"
-            stations = NORclient.get_stations(network = self.network, 
+            inventory = IMSclient.get_stations(network = self.network, 
                                          station    = self.station, 
                                          channel    = self.channel,
                                          starttime  = starttime, 
@@ -425,31 +445,22 @@ class getwaveform:
                                          latitude   = self.elat,
                                          minradius  = self.min_dist,
                                          maxradius  = self.max_dist,
-                                         use_cache  = True,
+                                         #use_cache  = True,    # 2022-07-19 NOTE! unable to get station info if using local cache! either sta data changed in the last few days or there is a bug in cached file!
                                          #cache_file = '/nobackup/celso/REPOSITORIES/pysep-dev-IMS/ims_full_inventory.p'
                                          )
-            print("IMS-SMP client: done. Stations: ", stations)
-            # 2022-03-02 may not need the following - 
-            #inventory = NORclient.get_array_inventory("ARCES", time=starttime)
-            #inventory = NORclient.get_array_inventory("NOA", time=starttime)
-            #print("DEBUG. done. inventory: ", inventory)
-            #stream_raw = NORclient.get_waveforms("NAO01", "BHZ", UTCDateTime(2017, 10, 29, 1, 0, 0), UTCDateTime(2017, 10, 29, 1, 0, 0)+3600)
-            # 
-            # OPTIOM 3 -faster? read_inventor(path2/db/inventory_seed..etc)
-            #
+            print("IMS-SMP client: done. Stations: ", inventory)
             print("IMS-SMP client: fetching waveform data ...")
-            #stream_raw = NORclient.get_waveforms("AR{A,B,C}*", "BHZ", starttime, endtime, attach_response=True) 
-            #print("DDDDDDDDDDDDDDDDDD", starttime, endtime) = 2017-09-03T03:28:21.760000Z 2017-09-03T04:03:21.760000Z
-            # USA0B
-            #stream_raw = NORclient.get_waveforms(self.station, self.channel, starttime, endtime)
-            stream_raw = NORclient.get_waveforms(stations, self.channel, starttime, endtime)
-            print('TEST1', stations)
-            print('TEST2', stream_raw)
-            #stream_raw = NORclient.get_array_waveforms("ARCES", "BHZ", starttime, endtime)  # TEST 2022-03-02. issue with ARCES: ValueError: did not find matching array 
-            #stream_raw = NORclient.get_array_waveforms("NOA", "*Z", starttime, endtime)     # TEST 2022-03-02. same issue as above but with NOA array
-            #print("IMS-SMP client: done. Waveforms: ", stream_raw.__str__(extended=True))
+            stream_raw = IMSclient.get_waveforms(station = self.station, 
+                                    channel              = self.channel, 
+                                    starttime            = starttime, 
+                                    endtime              = endtime,
+                                    #attach_response      = True,
+                                    #set_ims_network_code = True
+                                    )
 
+        #-----------------------------------------------------------
         ## OBSPY ROUTINES TO CONVERT STREAM 
+        #-----------------------------------------------------------
         ## ~/miniconda3/envs/seismonpy_dev/lib/python3.7/site-packages/obspy/io/sac/sactrace.py
         ## https://docs.obspy.org/master/packages/autogen/obspy.io.sac.sactrace.html?highlight=sactrace#module-obspy.io.sac.sactrace
         #sachdr = _io.header_arrays_to_dict(self._hf, self._hi, self._hs,
@@ -457,7 +468,6 @@ class getwaveform:
         #                                   encoding=encoding)
         #stats = _ut.sac_to_obspy_header(sachdr)
         # set reftime
-        inventory = stations
         stream = obspy.Stream()
         stream = set_reftime(stream_raw, evtime)
 
@@ -466,7 +476,9 @@ class getwaveform:
             print('STOP. No waveforms to process. N stations = %d\n' % nsta)
             sys.exit()
 
+        #-----------------------------------------------------------
         # ADD SAC METADATA
+        #-----------------------------------------------------------
         st2 = add_sac_metadata(stream, client_name=self.client_name, ev=event, 
                                inventory=inventory, taup_model= self.taupmodel, 
                                )
@@ -698,28 +710,9 @@ class getwaveform:
         get absolute and reference event object
         '''
 
-        # IRIS
         # 20220718 TODO: ADD OPTION FOR CLIENT NORSAR-SEISMONPY (LOCALLY ACCESSIBLE NORSAR DATA)
-        if self.client_name != "LLNL":
-            # import functions to access waveforms
-            if not self.user and not self.password:
-                self.client = Client(self.client_name,debug=True, timeout=600)
-            else:
-                self.client = Client(self.client_name, user=self.user, 
-                                     password=self.password, debug=True, timeout=600)
-                # will only work for events in the 'IRIS' catalog
-                # (future: for Alaska events, read the AEC catalog)
+        # CODE HERE
 
-            # get event object
-            self.get_event_object()
-
-            # use a different reference time and place for station subsetting
-            if self.rlat is not None:
-                self.reference_time_place()
-            # or use reference same as the origin
-            else:
-                self.ref_time_place = self.ev
-        # 20220718 TODO: ADD OPTION FOR CLIENT NORSAR-SEISMONPY
         # Option for INTERFACE NORSAR-SEISMONPY AND IMS-NMS CLIENT
         if self.client_name == "IMS-SMP":
             #self.client = NORclient(self.client_name)
@@ -736,7 +729,7 @@ class getwaveform:
                 self.ref_time_place = self.ev
         
         # LLNL
-        if self.client_name == "LLNL":
+        elif self.client_name == "LLNL":
             import llnl_db_client
             self.client = llnl_db_client.LLNLDBClient(
                 "/store/raw/LLNL/UCRL-MI-222502/westernus.wfdisc")
@@ -759,6 +752,27 @@ class getwaveform:
             else:
                 print("WARNING. No events in the catalog for the given time period")
                 #sys.exit()
+        # IRIS
+        #if self.client_name != "LLNL":
+        else:
+            # import functions to access waveforms
+            if not self.user and not self.password:
+                self.client = Client(self.client_name,debug=True, timeout=600)
+            else:
+                self.client = Client(self.client_name, user=self.user, 
+                                     password=self.password, debug=True, timeout=600)
+                # will only work for events in the 'IRIS' catalog
+                # (future: for Alaska events, read the AEC catalog)
+
+            # get event object
+            self.get_event_object()
+
+            # use a different reference time and place for station subsetting
+            if self.rlat is not None:
+                self.reference_time_place()
+            # or use reference same as the origin
+            else:
+                self.ref_time_place = self.ev
 
         # print client and event info
         print(self.ev)
