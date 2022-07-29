@@ -547,7 +547,7 @@ class getwaveform:
         # Get list of unique stations + locaiton (example: 'KDAK.00')
         stalist = []
         for tr in stream.traces:
-            if self.ifverbose: print(tr)
+            #if self.ifverbose: print(tr)   # 2022-07-29 this is just creating a list. no processing. no need to print.
             station_key = "%s.%s.%s.%s" % (tr.stats.network, tr.stats.station,
                     tr.stats.location, tr.stats.channel[:-1])
             stalist.append(station_key)

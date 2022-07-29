@@ -778,7 +778,7 @@ def check_if_LLNL_event(event_time):
     """
     sec_threshold = 5
 
-    print('Checking if this is an NTS event ... (JGRSE18)')
+    print('CHECKING IF THIS IS AN LLNL EVENT ... (paper JGRSE 2018)')
     # event times and names are from the LLNL database
     event_time_name_LLNL = {
             # nuclear tests
@@ -828,7 +828,8 @@ def check_if_LLNL_event(event_time):
             evname_key = evname         # string
             is_an_llnl_event = True
             break
-
+    if not is_an_llnl_event:
+        print('Not an LLNL event, continuing ...')
     return evname_key, is_an_llnl_event
 
 def rename_if_LLNL_event(st, event_time):
@@ -838,7 +839,7 @@ def rename_if_LLNL_event(st, event_time):
     evname_key, is_an_llnl_event = check_if_LLNL_event(event_time)
 
     if(is_an_llnl_event):
-        print("WARNING: This is an NTS event. New event name:", evname_key)
+        print("WARNING: This is an LLNL event. New event name:", evname_key)
         for tr in st.traces:
             tr.stats.sac['kevnm'] = evname_key
     else:
