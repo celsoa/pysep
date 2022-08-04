@@ -443,9 +443,9 @@ class getwaveform:
                                          endtime    = endtime,
                                          longitude  = self.elon,
                                          latitude   = self.elat,
-                                         minradius  = self.min_dist,
-                                         maxradius  = self.max_dist,
-                                         #use_cache  = True,    # 2022-07-19 NOTE! unable to get station info if using local cache! either sta data changed in the last few days or there is a bug in cached file!
+                                         minradius  = kilometer2degrees(self.min_dist),
+                                         maxradius  = kilometer2degrees(self.max_dist),
+                                         use_cache  = True,    # 2022-07-19 NOTE! unable to get station info if using local cache! either sta data changed in the last few days or there is a bug in cached file!
                                          #cache_file = '/nobackup/celso/REPOSITORIES/pysep-dev-IMS/ims_full_inventory.p'
                                          )
             print("IMS-SMP client: done. Stations: ", inventory)
