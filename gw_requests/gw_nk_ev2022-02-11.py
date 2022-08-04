@@ -17,7 +17,7 @@ def get_ev_info(ev_info,iex):
         #ev_info.icreateNull = 1
         ev_info.icreateNull = 0
 
-        ev_info.overwrite_ddir = 0  
+        ev_info.overwrite_ddir = 0
 
         #RAW and ENZ files can be used when checking if you are receiving all the data ($PYSEP/check_getwaveform.bash)
         ev_info.isave_raw = False
@@ -34,7 +34,7 @@ def get_ev_info(ev_info,iex):
         ev_info.emag = 3.5
 
         ev_info.min_dist = 0
-        ev_info.max_dist = 3000
+        ev_info.max_dist = 1000
         ev_info.tbefore_sec = 100
         ev_info.tafter_sec = 1000
 
@@ -50,5 +50,11 @@ def get_ev_info(ev_info,iex):
         #ev_info.outformat = 'DISP'
         #------------------------------
 
+        ## TEST GET IMS DATA
+        #ev_info.ifmass_downloader = False
+        #ev_info.client_name = 'IMS-SMP'
+        ##ev_info.station = 'USRK,KSRS,HILR,MJAR'    # 2022-07-13 ISSUE: is it correcting for instrument respsonse?
+        #ev_info.station = 'USRK,KSRS,MJAR'    # 2022-07-13 ISSUE: is it correcting for instrument respsonse?
+        #ev_info.channel = '*'
 
     return(ev_info)
