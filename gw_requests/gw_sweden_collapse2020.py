@@ -24,16 +24,24 @@ def get_ev_info(ev_info,iex):
         ev_info.isave_raw_processed = False
         ev_info.isave_ENZ = False
 
-        # EVENT INFO
-        # 67.826°N 20.267°E 1.0 km depth , https://earthquake.usgs.gov/earthquakes/eventpage/us70009ja2/technical
-        ev_info.otime = obspy.UTCDateTime("2020-05-18T01:11:56") # 2020-05-18 01:11:56
-        ev_info.elon = 20.267
-        ev_info.elat = 67.826
-        ev_info.edep = 1000
-        ev_info.emag = 4.9
+        ## EVENT INFO USGS
+        ## 67.826°N 20.267°E 1.0 km depth , https://earthquake.usgs.gov/earthquakes/eventpage/us70009ja2/technical
+        #ev_info.otime = obspy.UTCDateTime("2020-05-18T01:11:56") # 2020-05-18 01:11:56
+        #ev_info.elon = 20.267
+        #ev_info.elat = 67.826
+        #ev_info.edep = 1000
+        #ev_info.emag = 4.9
+
+        # EVENT INFO ISC -- http://www.isc.ac.uk/cgi-bin/wfreq/prepare?evid=618291845&schema=isc
+        # ISC 	2020/05/18 01:11:55.328 	67.7951 	20.1931 	0.0
+        ev_info.otime = obspy.UTCDateTime("2020-05-18T01:11:55.328") # obtained on 2022-08-31 13:38
+        ev_info.elon = 20.1931
+        ev_info.elat = 67.7951
+        ev_info.edep = 0
+        ev_info.emag = 4.7 # MW  4.7 GCMT -- from the link above 
 
         ev_info.min_dist = 0
-        ev_info.max_dist = 1000
+        ev_info.max_dist = 1500
         ev_info.tbefore_sec = 100
         ev_info.tafter_sec = 500
 
