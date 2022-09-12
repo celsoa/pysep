@@ -445,20 +445,49 @@ class getwaveform:
                                          latitude   = self.elat,
                                          minradius  = kilometer2degrees(self.min_dist),
                                          maxradius  = kilometer2degrees(self.max_dist),
-                                         #use_cache  = True,    # 2022-07-19 NOTE! unable to get station info if using local cache! either sta data changed in the last few days or there is a bug in cached file!
-                                         use_cache  = False,   # 2022-08-05 NOTE: use. else error: Error requesting waveforms for station AKASG
+                                         use_cache  = True,    # 2022-07-19 NOTE! unable to get station info if using local cache! either sta data changed in the last few days or there is a bug in cached file!
+                                         #use_cache  = False,   # 2022-08-05 NOTE: use. else error: Error requesting waveforms for station AKASG
                                          #cache_file = '/nobackup/celso/REPOSITORIES/pysep-dev-IMS/ims_full_inventory.p'
                                          )
             print("IMS-SMP client: done. Stations: ", inventory)
+            #
             print("IMS-SMP client: fetching waveform data ...")
-            stream_raw = IMSclient.get_waveforms(station = self.station, 
-                                    channel              = self.channel, 
-                                    starttime            = starttime, 
-                                    endtime              = endtime,
-                                    #attach_response      = True,
-                                    #set_ims_network_code = True
-                                    )
-
+            ## OPTION 1. request IMS data one station at a time
+            ## REFERENCE FOR get_waveforms: /vcs/celso/seismon_py/seismonpy/utils/ims_request.py
+            #stream_raw = IMSclient.get_waveforms(station = self.station, 
+            #                        channel              = self.channel, 
+            #                        starttime            = starttime, 
+            #                        endtime              = endtime,
+            #                        #attach_response      = True,
+            #                        #set_ims_network_code = True
+            #                        )
+            #
+            #-----------------------------------------------------------
+            # OPTION 2: (DEFAULT) use inventory to request data recursively one station at a time.
+            # Works with list of stations preselected by region+radius
+            # 2022-09-12 WORKS. Tested on Kiruna event.
+            stream_raw = obspy.Stream()
+            for net in inventory:
+                print('Number of stations found: ', len(inventory[0]))
+                for sta in net:
+                    print("IMS-SMP client: fetching waveform data for %s ..." % sta.code)
+                    stream_raw += IMSclient.get_waveforms(station = sta.code, 
+                                            channel               = self.channel,
+                                            starttime             = starttime, 
+                                            endtime               = endtime,
+                                            #attach_response      = True,
+                                            #set_ims_network_code = True
+                                            )
+            #-----------------------------------------------------------
+            ## OPTION 3. Feed inventory directly into get_waveforms
+            ## 2022-09-12. Doesnt work. AttributeError: 'NoneType' object has no attribute 'split'
+            ## File "/vcs/celso/seismon_py/seismonpy/utils/ims_request.py", line 354, in <listcomp>
+            #stream_raw = IMSclient.get_waveforms(station = inventory,
+            #                        starttime             = starttime, 
+            #                        endtime               = endtime,
+            #                        #attach_response      = True,
+            #                        #set_ims_network_code = True
+            #                        )
         #-----------------------------------------------------------
         ## OBSPY ROUTINES TO CONVERT STREAM 
         #-----------------------------------------------------------
