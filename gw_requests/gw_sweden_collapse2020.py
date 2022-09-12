@@ -15,7 +15,7 @@ def get_ev_info(ev_info,iex):
         #keep stations with missing components and fill the missing component with a null trace (MPEN)
         #Be sure to set the null component to 0 in the weight file when running cap
         #ev_info.icreateNull = 1
-        ev_info.icreateNull = 0
+        ev_info.icreateNull = 1
 
         ev_info.overwrite_ddir = 0  
 
@@ -56,6 +56,20 @@ def get_ev_info(ev_info,iex):
         #ev_info.scale_factor = 1
         #ev_info.outformat = 'DISP'
         #------------------------------
+
+        #-----------------------------------------------------------
+        # IMS REQUEST
+        # Be sure to specify each IMS station. wildcard '*' is not implemented.
+        ev_info.idb = 0
+        ev_info.ifmass_downloader = False
+        ev_info.client_name = 'IMS-SMP'
+        #ev_info.station = 'FINES'
+        #ev_info.station = 'I37NO'
+        ev_info.channel = '*H*' # DEFAULT. be sure to include SH for IMS data (vertical sensors)
+                                # do not use '*' bc it finds BDF LDA data with no instrument response.
+        #ev_info.channel = 'BH*,HH*,SH*,MH*' # 2022-09-12 doesnt' work.
+        ev_info.icreateNull = 1 # NOTE USE. Else vertical-components will not be saved.
+        #-----------------------------------------------------------
 
 
     return(ev_info)
