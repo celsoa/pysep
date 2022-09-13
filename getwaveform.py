@@ -466,28 +466,28 @@ class getwaveform:
             # OPTION 2: (DEFAULT) use inventory to request data recursively one station at a time.
             # Works with list of stations preselected by region+radius
             # 2022-09-12 WORKS. Tested on Kiruna event.
-            stream_raw = obspy.Stream()
-            for net in inventory:
-                print('Number of stations found: ', len(inventory[0]))
-                for sta in net:
-                    print("IMS-SMP client: fetching waveform data for %s ..." % sta.code)
-                    stream_raw += IMSclient.get_waveforms(station = sta.code, 
-                                            channel               = self.channel,
-                                            starttime             = starttime, 
-                                            endtime               = endtime,
-                                            #attach_response      = True,
-                                            #set_ims_network_code = True
-                                            )
-            #-----------------------------------------------------------
-            ## OPTION 3. Feed inventory directly into get_waveforms
-            ## 2022-09-12. Doesnt work. AttributeError: 'NoneType' object has no attribute 'split'
-            ## File "/vcs/celso/seismon_py/seismonpy/utils/ims_request.py", line 354, in <listcomp>
-            #stream_raw = IMSclient.get_waveforms(station = inventory,
-            #                        starttime             = starttime, 
-            #                        endtime               = endtime,
-            #                        #attach_response      = True,
-            #                        #set_ims_network_code = True
-            #                        )
+            #stream_raw = obspy.Stream()
+            #for net in inventory:
+            #    print('Number of stations found: ', len(inventory[0]))
+            #    for sta in net:
+            #        print("IMS-SMP client: fetching waveform data for %s ..." % sta.code)
+            #        stream_raw += IMSclient.get_waveforms(station = sta.code, 
+            #                                channel               = self.channel,
+            #                                starttime             = starttime, 
+            #                                endtime               = endtime,
+            #                                #attach_response      = True,
+            #                                #set_ims_network_code = True
+            #                                )
+            ##-----------------------------------------------------------
+            # OPTION 3. Feed inventory directly into get_waveforms
+            # 2022-09-13. Works- need to specify channel. But latest revision (AK) seems to fix this.
+            stream_raw = IMSclient.get_waveforms(station = inventory,
+                                    channel               = self.channel,   # FUTURE: ok to exclude this.
+                                    starttime             = starttime, 
+                                    endtime               = endtime,
+                                    #attach_response      = True,
+                                    #set_ims_network_code = True
+                                    )
         #-----------------------------------------------------------
         ## OBSPY ROUTINES TO CONVERT STREAM 
         #-----------------------------------------------------------
