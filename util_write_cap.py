@@ -570,7 +570,20 @@ def add_sac_metadata(st, client_name="LLNL", ev=[], inventory=[], ifverbose=Fals
         #        if tr.stats.station == stan.code:
         #            sta = stan  # sta is type Station
         # OPTION 2: use obspy's built-in functions 
-        sta = inventory.select(station=tr.stats.station).get_channel_metadata(seed_id=stakey)
+        # 
+        # 2022-09-23 ISSUE: IM.HFA0..HHE: Exception: No matching channel metadata found.
+        # This is an issue with Hagfors Array, Sweden. 
+        # There is a mismatch between available streams and station metadata.
+        # For period 2022-03-05 HH stream available, but only EH metadata available.
+        # Submitted a query to NDC forum about it.
+        # In the meantime, remove the trace and add dire warning.
+        try:
+            sta = inventory.select(station=tr.stats.station).get_channel_metadata(seed_id=stakey)
+        except Exception as e:
+            print('FATAL: %s: %s' % (stakey, e))
+            print('Removing this station from stream ...')
+            st.remove(tr)
+            continue
 
         if sta is None or sta == []:
             print('WARNING: %s: no match in Inventory. This may result in problems later in the processing' % stakey)
