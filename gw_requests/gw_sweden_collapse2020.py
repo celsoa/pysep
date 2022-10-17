@@ -33,17 +33,41 @@ def get_ev_info(ev_info,iex):
         #ev_info.emag = 4.9
 
         # EVENT INFO ISC -- http://www.isc.ac.uk/cgi-bin/wfreq/prepare?evid=618291845&schema=isc
+        # http://www.isc.ac.uk/cgi-bin/web-db-run?event_id=618291845&out_format=ISF2&request=COMPREHENSIVE
         # ISC 	2020/05/18 01:11:55.328 	67.7951 	20.1931 	0.0
-        ev_info.otime = obspy.UTCDateTime("2020-05-18T01:11:55.328") # obtained on 2022-08-31 13:38
-        ev_info.elon = 20.1931
-        ev_info.elat = 67.7951
+        # 
+        # NORSAR:  http://www.norsardata.no/NDC/bulletins/regional/2020/05/22759.html
+		#  Origin ID   22759 CENTRAL NORBOTTEN SWEDEN                                                        
+		#      Origin time        Lat        Lon     Depth    Trms  Azrms  Nph  Nsta   Mag     Majax   Minax  Strike   Area
+		#  2020-139:01.11.57.10  67.8404    20.2626   0.10    1.35 999.00   -1   30    4.72     -1.0    -1.0   -1.0      3.1 
+        #
+        # UPSALA
+        # Date       Time        Err   RMS Latitude Longitude  Smaj  Smin  Az Depth   Err Ndef Nsta Gap  mdist  Mdist Qual   Author      OrigID
+        # 2020/05/18 01:11:56.20   0.00 0.200  67.8400   20.2030  0.00   0.0  -1   0.0f             11                       se UPP         615403639
+
+        ##-----------------------------------------------------------
+        ## FROM ISC catalog. Keep for reference. 
+        ## I computed an FMT with this otime+hypocenter, using open+IMS stations. 
+        ## Also shared with infrasound group.
+        ##
+        #ev_info.otime = obspy.UTCDateTime("2020-05-18T01:11:55.328") # obtained on 2022-08-31 13:38
+        #ev_info.elon = 20.1931
+        #ev_info.elat = 67.7951
+        #ev_info.edep = 0
+        #ev_info.emag = 4.7 # MW  4.7 GCMT -- from the link above 
+        #-----------------------------------------------------------
+        # 2022-10-10 use the UPP solution per Tormod's suggestion. 
+        # ISC ORIGID: 615403639
+        ev_info.otime = obspy.UTCDateTime("2020-05-18T01:11:56.20") # last checked 2022-10-10
+        ev_info.elon = 20.2030
+        ev_info.elat = 67.8400
         ev_info.edep = 0
-        ev_info.emag = 4.7 # MW  4.7 GCMT -- from the link above 
+        ev_info.emag = 4.1  # ML 4.1 UPP 615403639
 
         ev_info.min_dist = 0
-        ev_info.max_dist = 1500
+        ev_info.max_dist = 2000
         ev_info.tbefore_sec = 100
-        ev_info.tafter_sec = 500
+        ev_info.tafter_sec = 2000
 
         ev_info.channel = 'BH?,HH?'
         ev_info.resample_TF = True
