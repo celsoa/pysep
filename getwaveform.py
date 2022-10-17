@@ -278,7 +278,7 @@ class getwaveform:
             
         # 2022-07-18 TEST USE INSTEAD: if self.client_name != "LLNL" and self.ifmass_downloader is False:
         #if self.client_name != "LLNL" and self.client_name != "NORSAR" and self.ifmass_downloader is False:
-        if self.client_name != "LLNL" and self.client_name != "IMS-SMP" and self.ifmass_downloader is False:
+        if self.client_name != "LLNL" and self.client_name != "IMS-SMP" and self.ifmass_downloader is False and self.client_name != "local":
             # Send request to client
             # There might be other way to do this using 'RoutingClient'
             print("Sending request to client: %s" % self.client_name)
@@ -497,6 +497,34 @@ class getwaveform:
         #                                   nulls=debug_headers,
         #                                   encoding=encoding)
         #stats = _ut.sac_to_obspy_header(sachdr)
+
+        #-----------------------------------------------------------
+        # OPTION X: READ DATA FROM LOCAL DATABASE. 
+        # EXPECTS DATA IN OBSPY FORMATS: INVENTORY, STREAM
+        #-----------------------------------------------------------
+        elif self.client_name=="local" and self.ifmass_downloader is False:
+            from obspy.core.inventory.inventory import read_inventory
+            from obspy import read
+
+            starttime = reftime - self.tbefore_sec
+            endtime   = reftime + self.tafter_sec
+
+            # TODO declare these from gw_X scripts
+            path2inv = "20220926--nord_stream_data--Sweden_seismo_network/inventory_swedish_net"
+            #path2str = "20220926--nord_stream_data--Sweden_seismo_network/ev1/*"    # EVENT 1
+            path2str = "20220926--nord_stream_data--Sweden_seismo_network/ev2/*"    # EVENT 2
+
+            stream_raw = read(path2str)
+            inventory = read_inventory(path2inv)
+            stream_raw.trim(starttime=starttime, endtime=endtime)
+            print(inventory)
+            print(stream_raw.__str__(extended=True))
+            #sys.exit('stop')
+
+        #-----------------------------------------------------------
+        # NEXT: PROCESS THE STREAM AND INVENTORY
+        #-----------------------------------------------------------
+
         # set reftime
         stream = obspy.Stream()
         stream = set_reftime(stream_raw, evtime)
@@ -738,13 +766,22 @@ class getwaveform:
     def get_events_client(self):
         '''
         get absolute and reference event object
+        20220718 TODO: ADD OPTION FOR CLIENT NORSAR-SEISMONPY (LOCALLY ACCESSIBLE NORSAR DATA)
         '''
 
-        # 20220718 TODO: ADD OPTION FOR CLIENT NORSAR-SEISMONPY (LOCALLY ACCESSIBLE NORSAR DATA)
-        # CODE HERE
+        # 2022-10-17 option to read local datasets
+        if self.client_name == "local":
+            self.get_event_object()
+
+            # use a different reference time and place for station subsetting
+            if self.rlat is not None:
+                self.reference_time_place()
+            # or use reference same as the origin
+            else:
+                self.ref_time_place = self.ev
 
         # Option for INTERFACE NORSAR-SEISMONPY AND IMS-NMS CLIENT
-        if self.client_name == "IMS-SMP":
+        elif self.client_name == "IMS-SMP":
             #self.client = NORclient(self.client_name)
             #self.client = client()
 
