@@ -11,18 +11,18 @@ Data request for the 2017 NK event
 from getwaveform import *
 import sys
 
-#events_file="/home/calvizur/REPOSITORIES/geoutils/data_source/evinfo_nk2016.txt"   # nuc
-#events_file="/home/calvizur/REPOSITORIES/geoutils/data_source/evinfo_nk2016-q.txt" # quake
-#events_file="/home/calvizur/REPOSITORIES/geoutils/data_source/evinfo_nk2016-c.txt" # collapse?
-#events_file="/home/calvizur/REPOSITORIES/geoutils/data_source/evinfo_nk2006.txt" # earliest 
-#events_file="/home/calvizur/REPOSITORIES/geoutils/data_source/evinfo_nk.txt" # earliest 
-#events_file="/home/calvizur/REPOSITORIES/geoutils/data_source/evinfo_nk_zhao" # main ref (2018-04-16)
-#events_file="/home/calvizur/REPOSITORIES/geoutils/data_source/evinfo_nk_quakes_usgs"
-#events_file="/home/calvizur/REPOSITORIES/geoutils/data_source/evinfo_nk_usgs2"  # Main+collapse (2018-04-16)
-#events_file="/home/calvizur/REPOSITORIES/geoutils/data_source/evinfo_nk_try"
-#events_file="/home/calvizur/REPOSITORIES/geoutils/data_source/evinfo_nk6_usgs"
-#events_file="/home/calvizur/REPOSITORIES/geoutils/data_source/evinfo_nk_quakes_usgs2"
-events_file="/home/calvizur/REPOSITORIES/geoutils/data_source/evinfo_nk_geothr_usgs"    # Nk geothermal #2
+#events_file="../geoutils/data_source/evinfo_nk2016.txt"   # nuc
+#events_file="../geoutils/data_source/evinfo_nk2016-q.txt" # quake
+#events_file="../geoutils/data_source/evinfo_nk2016-c.txt" # collapse?
+#events_file="../geoutils/data_source/evinfo_nk2006.txt" # earliest 
+#events_file="../geoutils/data_source/evinfo_nk.txt" # earliest 
+#events_file="../geoutils/data_source/evinfo_nk_zhao" # main ref (2018-04-16)
+#events_file="../geoutils/data_source/evinfo_nk_quakes_usgs"
+#events_file="../geoutils/data_source/evinfo_nk_usgs2"  # Main+collapse (2018-04-16)
+#events_file="../geoutils/data_source/evinfo_nk_try"
+#events_file="../geoutils/data_source/evinfo_nk6_usgs"
+#events_file="../geoutils/data_source/evinfo_nk_quakes_usgs2"
+events_file="../geoutils/data_source/evinfo_nk_geothr_usgs"    # Nk geothermal #2
 
 fid = open(events_file, "r")
 data = fid.readlines()
