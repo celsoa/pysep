@@ -4,6 +4,8 @@ from getwaveform import *
 
 def get_ev_info(ev_info,iex):
 # ===============================================================
+# Full list of icequakes since 2000. USGS catalog (derived from Alaska catalog)
+# https://earthquake.usgs.gov/earthquakes/map/?currentFeatureId=us7000i3gd&extent=55.72092,219.47388&extent=59.79511,232.25098&range=search&sort=oldest&showUSFaults=true&baseLayer=terrain&timeZone=utc&search=%7B%22name%22:%22Search%20Results%22,%22params%22:%7B%22starttime%22:%222000-01-01%2000:00:00%22,%22endtime%22:%222022-10-16%2023:59:59%22,%22minmagnitude%22:2.5,%22eventtype%22:%22ice%20quake%22,%22orderby%22:%22time%22%7D%7D
     if iex == 0:
         # DATA PREPARATION / PROCESSING
         ev_info.idb = 1     # 1 = IRIS. % 20220223 calvizuri -- seems needed. not sure why I removed it previously. TODO revise conditional tests in getwaveform to deprecate this, if that's the goal
@@ -24,17 +26,63 @@ def get_ev_info(ev_info,iex):
         ev_info.isave_raw_processed = False
         ev_info.isave_ENZ = False
 
+#-----------------------------------------------------------
         # EVENT INFO
-        # Full list of icequakes since 2000: https://earthquake.usgs.gov/earthquakes/map/?currentFeatureId=us7000i3gd&extent=55.72092,219.47388&extent=59.79511,232.25098&range=search&sort=oldest&showUSFaults=true&baseLayer=terrain&timeZone=utc&search=%7B%22name%22:%22Search%20Results%22,%22params%22:%7B%22starttime%22:%222000-01-01%2000:00:00%22,%22endtime%22:%222022-10-16%2023:59:59%22,%22minmagnitude%22:2.5,%22eventtype%22:%22ice%20quake%22,%22orderby%22:%22time%22%7D%7D
         # Largest icequake in the list: M 3.4 Ice Quake - 93 km NW of Elfin Cove, Alaska
-        # 2012-06-11 22:23:54 (UTC)58.862°N 137.323°W0.0 km depth
+        # Largest of the icequakes. FMTU shows localized-ish collapse
         # https://earthquake.usgs.gov/earthquakes/eventpage/ak0127hxu5g3/executive
+        # 2012-06-11T22:23:54.116000Z     -137.323      58.8616            0        3.4 | ice quake None | 93 km NW of Elfin Cove, Alaska
         ev_info.otime = obspy.UTCDateTime("2012-06-11T22:23:54")
         ev_info.elon = -137.323
         ev_info.elat = 58.862
         ev_info.edep = 0
         ev_info.emag = 3.4
 
+        # SMALLER EVENT, EPICENTER IN THE OCEAN, DEPTH 1KM, BUT CLOSE TO A GLACIER TERMINUS. WHAT IS IT? Plus it's a M2.8 -- relatively larger.
+        # NB: there is a signal in many stations, but this event looks too noisy.
+        # https://earthquake.usgs.gov/earthquakes/eventpage/us7000354q/map
+        # 2019-04-12T18:48:56.004000Z     -137.209      58.4352         1000        2.8 | ice quake None | 57 km WNW of Elfin Cove, Alaska
+        ev_info.otime = obspy.UTCDateTime("2019-04-12T18:48:56.004000Z")
+        ev_info.elon = -137.209
+        ev_info.elat = 58.4352
+        ev_info.edep = 1
+        ev_info.emag = 2.8
+
+        # EPICENTER NEAR TERMINUS
+        # NB: there is some signal there, clearer about 1-3Hz, and I might be able to get a solution after carefully aligning traces.
+        # https://earthquake.usgs.gov/earthquakes/eventpage/ak0194df40bs/executive
+        # 2019-04-05T18:56:53.673000Z     -137.266      58.4813            0        2.4 | ice quake None | 62 km WNW of Elfin Cove, Alaska
+        ev_info.otime = obspy.UTCDateTime("2019-04-05T18:56:53.673000Z")
+        ev_info.elon = -137.266
+        ev_info.elat = 58.4813
+        ev_info.edep = 0
+        ev_info.emag = 2.4
+        
+        # SMALLER EVENT, EPICENTER ON GLACIER
+        # Noisier signal and might be a little challenging but could stretch to get a solution
+        # https://earthquake.usgs.gov/earthquakes/eventpage/ak0196999c0p/executive
+        # 2019-05-16T20:44:14.885000Z     -139.388      60.0013            0        1.7 | ice quake None | 54 km NNE of Yakutat, Alaska
+        ev_info.otime = obspy.UTCDateTime("2019-05-16T20:44:14.885000Z")
+        ev_info.elon = -139.388
+        ev_info.elat = 60.0013
+        ev_info.edep = 0
+        ev_info.emag = 1.7
+
+        # SMALLER EVENT, EPICENTER ON GLACIER
+        # Signal is clearer between (1)2-5 Hz, clear onsets so might be able to model the first arrivals
+        # yes, try FMT analysis with this event
+        # aerial view of the glacier shows lots of sinuosity and twisted molasses/toffy looking paths.
+        # https://earthquake.usgs.gov/earthquakes/eventpage/ak0193jkcjyu
+        # 2019-03-18T13:38:23.065000Z      -140.21      59.9007            0        2.2 | ice quake None | 47 km NW of Yakutat, Alaska
+        ev_info.otime = obspy.UTCDateTime("2019-03-18T13:38:23.065000Z")
+        ev_info.elon = -140.21
+        ev_info.elat = 59.9007
+        ev_info.edep = 0
+        ev_info.emag = 2.2
+
+
+
+#-----------------------------------------------------------
         ev_info.min_dist = 0
         ev_info.max_dist = 500
         ev_info.tbefore_sec = 100
