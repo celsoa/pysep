@@ -29,8 +29,8 @@ def get_ev_info(ev_info,iex):
 #-----------------------------------------------------------
         # EVENT INFO
         # Largest icequake in the list: M 3.4 Ice Quake - 93 km NW of Elfin Cove, Alaska
-        # Largest of the icequakes. FMTU shows localized-ish collapse
         # https://earthquake.usgs.gov/earthquakes/eventpage/ak0127hxu5g3/executive
+        # Largest of the icequakes. great signal. FMTU shows localized-ish collapse
         # 2012-06-11T22:23:54.116000Z     -137.323      58.8616            0        3.4 | ice quake None | 93 km NW of Elfin Cove, Alaska
         ev_info.otime = obspy.UTCDateTime("2012-06-11T22:23:54")
         ev_info.elon = -137.323
@@ -80,6 +80,45 @@ def get_ev_info(ev_info,iex):
         ev_info.edep = 0
         ev_info.emag = 2.2
 
+
+#-----------------------------------------------------------
+        # FOCUS: NEAR WRIGHT GLACIER CLUSTER PER NATALIA RUPPERT'S SUGGESTION.
+        # I'M WORKING BACKWARDS FROM LARGEST TO SMALLEST
+        # https://earthquake.usgs.gov/earthquakes/eventpage/us6000ibz0/ 
+        # M 3.2 Ice Quake - 55 km E of Juneau, Alaska
+        # 2022-08-18 21:48:22 (UTC)58.339°N 133.482°W1.0 km depth
+        # 2022-08-18 21:48:22.000 UTC, 58.339°N  133.482°W
+        # This one is near a terminus but close to a mountain so it could be either slump or break.
+        # No signals below 0.5 Hz, so not a good candidate unless near stations.
+        ev_info.otime = obspy.UTCDateTime("2022-08-18T21:48:22.000Z")
+        ev_info.elon = -133.482
+        ev_info.elat = 58.339
+        ev_info.edep = 1000
+        ev_info.emag = 3.2
+
+        # Focus: near Wright glacier cluster per Natalia Ruppert's suggestion.
+        # https://earthquake.usgs.gov/earthquakes/eventpage/ak016gry1a9s/
+        # M 3.4 Ice Quake - 45 km NNW of Juneau, Alaska
+        # 2016-12-30 18:27:10 (UTC)58.672°N 134.769°W0.3 km depth
+        # 2016-12-30 18:27:10.406 UTC, 58.672°N  134.769°W
+        # there is a signal about 0.02 Hz but noise levels are a little high.
+        # I might be able to do an inversion with some effort aligning signals.
+        ev_info.otime = obspy.UTCDateTime("2016-12-30T18:27:10.406")
+        ev_info.elon = -134.769
+        ev_info.elat = 58.672
+        ev_info.edep = 300
+        ev_info.emag = 3.4
+
+        # Focus: near Wright glacier cluster per Natalia Ruppert's suggestion.
+        # https://earthquake.usgs.gov/earthquakes/eventpage/ak014dgx3mck/executive
+        # M 3.2 Ice Quake - 38 km ESE of Hobart Bay, Alaska
+        # 2014-10-20 21:22:54 (UTC)57.321°N 132.779°W0.0 km depth
+        # 2014-10-20 21:22:54.447 UTC ,      57.321°N  132.779°W
+        ev_info.otime = obspy.UTCDateTime("2014-10-20T21:22:54.447")
+        ev_info.elon = -132.779
+        ev_info.elat = 57.321
+        ev_info.edep = 0
+        ev_info.emag = 3.2
 
 
 #-----------------------------------------------------------
