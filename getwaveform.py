@@ -93,6 +93,7 @@ class getwaveform:
         # station parameters
         self.network = '*'                   # all networks
         self.station = '*'                   # all stations
+        self.exclude_net = ''                # except these networks 
         #self.station = '*,-PURD,-NV33,-GPO'  # all stations except -(these)
         self.channel = '*'                   # all channels    
         self.location = '*'                  # all locations
@@ -235,7 +236,7 @@ class getwaveform:
                 station = self.station,
                 location = self.location,
                 channel = self.channel,
-                #exclude_networks = (),
+                exclude_networks = self.exclude_net,
                 #exclude_stations = (),
                 #limit_stations_to_inventory=None,
                 reject_channels_with_gaps=False,

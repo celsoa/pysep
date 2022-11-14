@@ -39,6 +39,7 @@ def get_ev_info(ev_info,iex):
         ev_info.tafter_sec = 2000
 
         ev_info.channel = 'BH?,HH?,EH?'
+        ev_info.exclude_net = 'BK,NO,NS'
         ev_info.resample_TF = True
         ev_info.resample_freq = 20
         ev_info.scale_factor = 100
