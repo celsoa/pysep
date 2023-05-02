@@ -52,6 +52,7 @@ def get_ev_info(ev_info,iex):
         #-----------------------------------------------------------
         # IMS REQUEST
         # Be sure to specify each IMS station. wildcard '*' is not implemented.
+        #-----------------------------------------------------------
         ev_info.idb = 0
         ev_info.ifmass_downloader = False
         ev_info.client_name = 'IMS-SMP'
@@ -61,7 +62,12 @@ def get_ev_info(ev_info,iex):
                                 # do not use '*' bc it finds BDF LDA data with no instrument response.
         #ev_info.channel = 'BH*,HH*,SH*,MH*' # 2022-09-12 doesnt' work.
         ev_info.icreateNull = 1 # NOTE USE. Else vertical-only stations will not be saved.
-        #-----------------------------------------------------------
 
+        ##-----------------------------------------------------------
+        ## LOCAL DATA REPOSITORY, e.g. for data from Swedish Network
+        ##-----------------------------------------------------------
+        #ev_info.idb = 0
+        #ev_info.ifmass_downloader = False
+        #ev_info.client_name = 'local'
 
     return(ev_info)
