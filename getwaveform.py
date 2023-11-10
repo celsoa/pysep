@@ -219,7 +219,7 @@ class getwaveform:
                     longitude=self.elon,
                     minradius=kilometer2degrees(self.min_dist), 
                     maxradius=kilometer2degrees(self.max_dist))
-            print('DEBUG. domain radius (deg) min/max %f/%f (input, km %f)' %
+            print('DEBUG. domain radius (deg) min/max %f/%f (input %f km)' %
                     (domain.minradius, domain.maxradius, self.max_dist))
             print('DEBUG. lon/lat %f/%f' %
                     (domain.longitude, domain.latitude))
@@ -279,7 +279,8 @@ class getwaveform:
             
         # 2022-07-18 TEST USE INSTEAD: if self.client_name != "LLNL" and self.ifmass_downloader is False:
         #if self.client_name != "LLNL" and self.client_name != "NORSAR" and self.ifmass_downloader is False:
-        if self.client_name != "LLNL" and self.client_name != "IMS-SMP" and self.ifmass_downloader is False and self.client_name != "local":
+        #if self.client_name != "LLNL" and self.client_name != "IMS-SMP" and self.ifmass_downloader is False and self.client_name != "local":
+        if self.client_name != "LLNL" and self.client_name != "IMS-SMP" and self.ifmass_downloader is False and self.client_name != "local" and self.client_name != 'NIEP':
             # Send request to client
             # There might be other way to do this using 'RoutingClient'
             print("Sending request to client: %s" % self.client_name)
@@ -370,6 +371,49 @@ class getwaveform:
             pickle.dump(self,open(self.evname + '/' + 
                                   self.evname + '_ev_info.obj', 'wb'))    
             
+
+        #-----------------------------------------------------------
+        # 2023-06-14 TEST GET DATA FROM ORFEUS NETWORK
+
+        elif self.idb is None and self.client_name == 'NIEP':
+            #===================================
+            # SNIPPET FROM JOHANNES
+            starttime = reftime - self.tbefore_sec
+            endtime   = reftime + self.tafter_sec
+            client = Client('NIEP', force_redirect=True)
+            token = '/staff/johannes/eidatoken'
+            client.set_eida_token(token)
+            print("\n** WARNING ** Preparing request for client\n", client)
+            print("Downloading stations...")
+            stations = client.get_stations(network   = 'Y8,MD,UD', 
+                                      station   = '*',
+                                      location  = '*',
+                                      channel   = self.channel,
+                                      starttime = starttime,
+                                      endtime   = endtime,
+                                      level     = 'response')
+            #===================================
+            #-----------------------------------------------------------
+            inventory = stations    
+            sta_limit_distance(ref_time_place, 
+                               stations, 
+                               min_dist=self.min_dist, 
+                               max_dist=self.max_dist, 
+                               min_az=self.min_az, 
+                               max_az=self.max_az,
+                               ifverbose=self.ifverbose)
+            #-----------------------------------------------------------
+            print("Downloading waveforms...")
+            stream_raw = client.get_waveforms(
+                                              network         = 'Y8,MD,UD',
+                                              #station         = inventory,
+                                              station         = '*',
+                                              location        = '*',
+                                              channel         = self.channel,   # FUTURE: ok to exclude this.
+                                              starttime       = starttime, 
+                                              endtime         = endtime,
+                                              attach_response = True,
+                                              )
          
         elif self.client_name=="LLNL" and self.ifmass_downloader is False:
             #client_name = "LLNL"
@@ -489,6 +533,56 @@ class getwaveform:
                                     #attach_response      = True,
                                     #set_ims_network_code = True
                                     )
+
+        #-----------------------------------------------------------
+        # 2023-07-21 the following is needed since UIB etc no longer support MASS_DOWNLOADER.
+        #-----------------------------------------------------------
+        elif self.client_name == "UIB-NORSAR" and self.ifmass_downloader is False:
+            client = Client(self.client_name)
+
+            print("\nPreparing request for UIB-NORSAR data ...")
+            starttime = reftime - self.tbefore_sec
+            endtime   = reftime + self.tafter_sec
+            print("UIB-NORSAR client: requesting station data for network/station/channel(s): %s/%s/%s ..." % (self.network, self.station, self.channel))
+            inventory = Client.get_stations(network = self.network, 
+                                         station    = self.station, 
+                                         channel    = self.channel,
+                                         starttime  = starttime, 
+                                         endtime    = endtime,
+                                         longitude  = self.elon,
+                                         latitude   = self.elat,
+                                         minradius  = kilometer2degrees(self.min_dist),
+                                         maxradius  = kilometer2degrees(self.max_dist),
+                                         )
+            print("UIB-NORSAR client: done. Stations: ", inventory)
+            #
+            print("UIB-NORSAR client: fetching waveform data ...")
+            st = client.get_waveforms(network='*', station='*', location='*', channel='*', starttime=t1, endtime=t2)
+
+        ##-----------------------------------------------------------
+        ## 2023-11-06 RASPISHAKE
+        ##-----------------------------------------------------------
+        #elif self.client_name == "RASPISHAKE" and self.ifmass_downloader is False:
+        #    client = Client(self.client_name)
+
+        #    print("\nPreparing request for RASPISHAKE data ...")
+        #    starttime = reftime - self.tbefore_sec
+        #    endtime   = reftime + self.tafter_sec
+        #    print("RASPISHAKE client: requesting station data for network/station/channel(s): %s/%s/%s ..." % (self.network, self.station, self.channel))
+        #    inventory = Client.get_stations(network = 'AM',
+        #                                 station    = self.station, 
+        #                                 channel    = self.channel,
+        #                                 starttime  = starttime, 
+        #                                 endtime    = endtime,
+        #                                 longitude  = self.elon,
+        #                                 latitude   = self.elat,
+        #                                 minradius  = kilometer2degrees(self.min_dist),
+        #                                 maxradius  = kilometer2degrees(self.max_dist),
+        #                                 )
+        #    print("RASPISHAKE client: done. Stations: ", inventory)
+        #    #
+        #    print("RASPISHAKE client: fetching waveform data ...")
+        #    st = client.get_waveforms(network='AM', station='*', location='*', channel='*', starttime=t1, endtime=t2)
         #-----------------------------------------------------------
         ## OBSPY ROUTINES TO CONVERT STREAM 
         #-----------------------------------------------------------
@@ -502,6 +596,7 @@ class getwaveform:
         #-----------------------------------------------------------
         # OPTION X: READ DATA FROM LOCAL DATABASE. 
         # EXPECTS DATA IN OBSPY FORMATS: INVENTORY, STREAM
+        # BE SURE TO SPECIFY: client_name="local" self.ifmass_downloader=False
         #-----------------------------------------------------------
         elif self.client_name=="local" and self.ifmass_downloader is False:
             from obspy.core.inventory.inventory import read_inventory
@@ -510,10 +605,20 @@ class getwaveform:
             starttime = reftime - self.tbefore_sec
             endtime   = reftime + self.tafter_sec
 
-            # TODO declare these from gw_X scripts
-            path2inv = "20220926--nord_stream_data--Sweden_seismo_network/inventory_swedish_net"
+            ## TODO declare these from gw_X scripts
+            ## NORDSTREAM DATA
+            #path2inv = "20220926--nord_stream_data--Sweden_seismo_network/inventory_swedish_net"
             #path2str = "20220926--nord_stream_data--Sweden_seismo_network/ev1/*"    # EVENT 1
-            path2str = "20220926--nord_stream_data--Sweden_seismo_network/ev2/*"    # EVENT 2
+            #path2str = "20220926--nord_stream_data--Sweden_seismo_network/ev2/*"    # EVENT 2
+
+            # KIRUNA EVENT
+            path2dir = '/nobackup/celso/QUAKES/20200518011155328--sweden_kiruna_mine_collapse/data_SNSS_bjorn/data'
+            path2inv = "%s/inventory_swedish_net" % path2dir
+            path2str = "%s/*mseed"  % path2dir
+
+            ## NWRussia mining event
+            #path2inv = "/nobackup/celso/QUAKES/20220305001326100--mine_collapse_NW_russia/analysis/an20230714-01_BEAM_DATA_TORMOD/prepare_response_data/NB201.SEED"
+            #path2str = "/nobackup/celso/QUAKES/20220305001326100--mine_collapse_NW_russia/analysis/an20230714-01_BEAM_DATA_TORMOD/CELSO_KHIBINY/beam_NO.NB201..BH*.sac" 
 
             stream_raw = read(path2str)
             inventory = read_inventory(path2inv)
@@ -597,13 +702,15 @@ class getwaveform:
         # SAVE STATION PLOT
         # Note: Plotted are stations in the inventory and NOT the ones with the traces
         # It could be possible that there might not be waveforms for some of these stations.
+        print('plotting station map ...')
         try:
             fig = inventory.plot(projection="local", resolution="i", label = False, show=False)
             Catalog([self.ev]).plot(fig=fig, outfile=self.evname + '/station_map.pdf')
-        except:
-            print("There is a problem with creating the station map!")
+        except Exception as e:
+            print("WARNING: Unable to create station map: ", e)
 
         # Get list of unique stations + locaiton (example: 'KDAK.00')
+        print('creating list of unique stations ...')
         stalist = []
         for tr in stream.traces:
             #if self.ifverbose: print(tr)   # 2022-07-29 this is just creating a list. no processing. no need to print.
