@@ -34,22 +34,32 @@ def get_ev_info(ev_info,iex):
         # 2022-080:05.32.55.34  61.5584     2.3871  10.00    0.56 999.00   69   40    4.70      0.3     0.1  123.5      0.1 
 
         #-----------------------------------------------------------
-        # the following otime was used for the DC moment tensor inversion.
-        # keep for reference, but for the paper may need to finalize lon, lat, depth time.
-        ev_info.otime = obspy.UTCDateTime("2022-03-21T05:32:57.008Z")   # 
-        ev_info.elon = 2.4296
-        ev_info.elat = 61.4582
-        ev_info.edep = 1000
+        ## the following otime was used for the DC moment tensor inversion.
+        ## keep for reference, but for the paper may need to finalize lon, lat, depth time.
+        #ev_info.otime = obspy.UTCDateTime("2022-03-21T05:32:57.008Z")   # 
+        #ev_info.elon = 2.4296
+        #ev_info.elat = 61.4582
+        #ev_info.edep = 1000
+        #ev_info.emag = 4.7
+
+        # FINAL LOCATION.
+        # latest solution from Annie. email on 2022-11-18.
+        # Time                      Lat       Lon     Depth
+        # 2022-03-21 05 32 56.533   61.710    2.268   26.66
+        ev_info.otime = obspy.UTCDateTime("2022-03-21T05:32:56.533")
+        ev_info.elon = 2.268 
+        ev_info.elat = 61.710
+        ev_info.edep = 26660.0
         ev_info.emag = 4.7
         #-----------------------------------------------------------
 
         ev_info.min_dist = 0
-        ev_info.max_dist = 2000
+        ev_info.max_dist = 500
         ev_info.tbefore_sec = 100
         ev_info.tafter_sec = 2000
 
-        ev_info.network = 'GR'
-        ev_info.network = 'KQ,TH,SX'
+        #ev_info.network = 'GR'
+        #ev_info.network = 'KQ,TH,SX'
         #ev_info.channel = 'LH?,BH?,HH?,SH?'
         ev_info.channel = 'BH?,HH?'
         #ev_info.channel = 'HH?' # the DC solution used only HH stations

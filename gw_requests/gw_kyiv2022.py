@@ -35,19 +35,30 @@ def get_ev_info(ev_info,iex):
         #ev_info.otime = obspy.UTCDateTime("2022-02-25T00:00:00.000000Z")
         #ev_info.otime = obspy.UTCDateTime("2022-02-26T00:00:00.000000Z")
         #ev_info.otime = obspy.UTCDateTime("2022-02-27T00:00:00.000000Z")
-        ev_info.otime = obspy.UTCDateTime("2022-02-28T00:00:00.000000Z")
-        ev_info.elon = 30.523333
-        ev_info.elat = 50.45 
+
+        ## LAST
+        ##ev_info.otime = obspy.UTCDateTime("2022-02-28T00:00:00.000000Z")
+        ##ev_info.elon = 30.523333
+        ##ev_info.elat = 50.45 
+        ##ev_info.edep = 0 
+        ##ev_info.emag = 0
+
+        # Largest event from Ben's excel table. 
+        # Sounds like this is the latest QCd and finalized table so far.
+        # 2022-02-25T08:33:26.950000Z	28.454983	50.933848	31.5	15.11	28.460568	50.930465	4.254553447	6.990552975	3.639823389	4.83986334	6.165	6.165	3.214	2.24
+        ev_info.otime = obspy.UTCDateTime("2022-02-25T08:33:26.950000Z")
+        ev_info.elon = 28.454983
+        ev_info.elat = 50.933848
         ev_info.edep = 0 
-        ev_info.emag = 0
+        ev_info.emag = 2.24 # Ml
 
         ev_info.min_dist = 0
         #ev_info.max_dist = 1000
         ev_info.max_dist = 500
         ev_info.tbefore_sec = 100
-        ev_info.tafter_sec = 60 * 60 * 24
+        ev_info.tafter_sec = 1000 
 
-        ev_info.channel = 'BH?,HH'
+        ev_info.channel = 'BH?,HH?,SH?'
         #ev_info.network = 'MD'
         ev_info.resample_TF = True
         ev_info.resample_freq = 20
