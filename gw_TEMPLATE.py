@@ -42,29 +42,41 @@ def get_ev_info(ev_info,iex):
         ev_info.resample_freq = 20
         ev_info.scale_factor = 100
         #ev_info.phase_window = False
-        #-------for specfem------------
+
+        ##-----------------------------------------------------------
+        ## SPECFEM  (NB 2023-07-21: LEGACY. HOW DOES IT WORK.
+        ##-----------------------------------------------------------
         #ev_info.tbefore_sec = 0
         #ev_info.resample_TF = False
         #ev_info.scale_factor = 1
         #ev_info.outformat = 'DISP'
-        #------------------------------
+        ##-----------------------------------------------------------
 
-        #-----------------------------------------------------------
-        # IMS REQUEST
-        # Be sure to specify each IMS station. wildcard '*' is not implemented.
-        #-----------------------------------------------------------
-        ev_info.idb = 0
-        ev_info.ifmass_downloader = False
-        ev_info.client_name = 'IMS-SMP'
-        #ev_info.station = 'FINES'
-        #ev_info.station = 'I37NO'
-        ev_info.channel = '*H*' # DEFAULT. be sure to include SH for IMS data (vertical sensors)
-                                # do not use '*' bc it finds BDF LDA data with no instrument response.
-        #ev_info.channel = 'BH*,HH*,SH*,MH*' # 2022-09-12 doesnt' work.
-        ev_info.icreateNull = 1 # NOTE USE. Else vertical-only stations will not be saved.
+        ##-----------------------------------------------------------
+        ## UIB-NORSAR REQUEST
+        ## 2023-07-21 needed since UIB etc no longer support MASS_DOWNLOADER.
+        ## USE GIT BRANCH: feature/imsdata, CONDA ENV: seismonpy_dev
+        ##-----------------------------------------------------------
+        #ev_info.client_name = "UIB-NORSAR" 
+        #ev_info.ifmass_downloader = False
+
+        ##-----------------------------------------------------------
+        ## IMS REQUEST
+        ## Be sure to specify each IMS station. wildcard '*' is not implemented.
+        ##-----------------------------------------------------------
+        #ev_info.idb = 0
+        #ev_info.ifmass_downloader = False
+        #ev_info.client_name = 'IMS-SMP'
+        ##ev_info.station = 'FINES'
+        ##ev_info.station = 'I37NO'
+        #ev_info.channel = '*H*' # DEFAULT. be sure to include SH for IMS data (vertical sensors)
+        #                        # do not use '*' bc it finds BDF LDA data with no instrument response.
+        ##ev_info.channel = 'BH*,HH*,SH*,MH*' # 2022-09-12 doesnt' work.
+        #ev_info.icreateNull = 1 # NOTE USE. Else vertical-only stations will not be saved.
 
         ##-----------------------------------------------------------
         ## LOCAL DATA REPOSITORY, e.g. for data from Swedish Network
+        ## NOTE: currently set only for Kiruna and NW Russia events.
         ##-----------------------------------------------------------
         #ev_info.idb = 0
         #ev_info.ifmass_downloader = False
