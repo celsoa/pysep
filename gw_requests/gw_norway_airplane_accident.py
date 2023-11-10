@@ -25,19 +25,21 @@ def get_ev_info(ev_info,iex):
         ev_info.isave_ENZ = False
 
         # EVENT INFO
-        #2021-02-24T10:05:57.024000Z -22.20764 63.91658 1.098 5.72
-        ev_info.otime = obspy.UTCDateTime("2021-02-24T10:05:57.024000Z")
-        ev_info.elon = -22.20764
-        ev_info.elat = 63.91658
-        ev_info.edep = 1098 
-        ev_info.emag = 4.6
+        # https://www.nrk.no/innlandet/undersokjer-mogleg-flystyrt-1.16533274
+        # 60.6691° N 10.5699°
+        # time: per Asta email, 28.08 ca kl. 18:55 (16:55 UTC)
+        ev_info.otime = obspy.UTCDateTime("2023-08-28T16:55:00.000Z")
+        ev_info.elon = 10.5699
+        ev_info.elat = 60.6691
+        ev_info.edep = 0
+        ev_info.emag = 0
 
         ev_info.min_dist = 0
-        ev_info.max_dist = 2000
-        ev_info.tbefore_sec = 100
-        ev_info.tafter_sec = 500
+        ev_info.max_dist = 500
+        ev_info.tbefore_sec = -1000
+        ev_info.tafter_sec = 1000
 
-        ev_info.channel = 'BH?'
+        ev_info.channel = 'BH?,HH?'
         ev_info.resample_TF = True
         ev_info.resample_freq = 20
         ev_info.scale_factor = 100
@@ -57,8 +59,8 @@ def get_ev_info(ev_info,iex):
         ## 2023-07-21 needed since UIB etc no longer support MASS_DOWNLOADER.
         ## USE GIT BRANCH: feature/imsdata, CONDA ENV: seismonpy_dev
         ##-----------------------------------------------------------
-        #ev_info.client_name = "UIB-NORSAR" 
-        #ev_info.ifmass_downloader = False
+        ev_info.client_name = "UIB-NORSAR" 
+        ev_info.ifmass_downloader = False
 
         ##-----------------------------------------------------------
         ## IMS REQUEST

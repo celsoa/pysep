@@ -25,45 +25,35 @@ def get_ev_info(ev_info,iex):
         ev_info.isave_ENZ = False
 
         # EVENT INFO
-        #2021-02-24T10:05:57.024000Z -22.20764 63.91658 1.098 5.72
-        ev_info.otime = obspy.UTCDateTime("2021-02-24T10:05:57.024000Z")
-        ev_info.elon = -22.20764
-        ev_info.elat = 63.91658
-        ev_info.edep = 1098 
-        ev_info.emag = 4.6
+        # M 4.3 Mine Collapse - 2 km ENE of Crab Orchard, Tennessee
+        # 2021-08-13 11:57:34 (UTC) 35.916 °N 84.853 °W 0.2 km depth
+        # https://earthquake.usgs.gov/earthquakes/eventpage/se60133543/executive
+        ev_info.otime = obspy.UTCDateTime("2021-08-13T11:57:34.970Z")
+        ev_info.elon = -84.853
+        ev_info.elat = 35.916
+        ev_info.edep = 200
+        ev_info.emag = 4.3
 
         ev_info.min_dist = 0
         ev_info.max_dist = 2000
         ev_info.tbefore_sec = 100
-        ev_info.tafter_sec = 500
+        ev_info.tafter_sec = 2000
 
-        ev_info.channel = 'BH?'
+        ev_info.channel = 'BH?,HH?'
         ev_info.resample_TF = True
         ev_info.resample_freq = 20
         ev_info.scale_factor = 100
         #ev_info.phase_window = False
-
-        ##-----------------------------------------------------------
-        ## SPECFEM  (NB 2023-07-21: LEGACY. HOW DOES IT WORK.
-        ##-----------------------------------------------------------
+        #-------for specfem------------
         #ev_info.tbefore_sec = 0
         #ev_info.resample_TF = False
         #ev_info.scale_factor = 1
         #ev_info.outformat = 'DISP'
-        ##-----------------------------------------------------------
-
-        ##-----------------------------------------------------------
-        ## UIB-NORSAR REQUEST
-        ## 2023-07-21 needed since UIB etc no longer support MASS_DOWNLOADER.
-        ## USE GIT BRANCH: feature/imsdata, CONDA ENV: seismonpy_dev
-        ##-----------------------------------------------------------
-        #ev_info.client_name = "UIB-NORSAR" 
-        #ev_info.ifmass_downloader = False
+        #------------------------------
 
         ##-----------------------------------------------------------
         ## IMS REQUEST
         ## Be sure to specify each IMS station. wildcard '*' is not implemented.
-        ##-----------------------------------------------------------
         #ev_info.idb = 0
         #ev_info.ifmass_downloader = False
         #ev_info.client_name = 'IMS-SMP'
@@ -73,13 +63,7 @@ def get_ev_info(ev_info,iex):
         #                        # do not use '*' bc it finds BDF LDA data with no instrument response.
         ##ev_info.channel = 'BH*,HH*,SH*,MH*' # 2022-09-12 doesnt' work.
         #ev_info.icreateNull = 1 # NOTE USE. Else vertical-only stations will not be saved.
+        ##-----------------------------------------------------------
 
-        ##-----------------------------------------------------------
-        ## LOCAL DATA REPOSITORY, e.g. for data from Swedish Network
-        ## NOTE: currently set only for Kiruna and NW Russia events.
-        ##-----------------------------------------------------------
-        #ev_info.idb = 0
-        #ev_info.ifmass_downloader = False
-        #ev_info.client_name = 'local'
 
     return(ev_info)

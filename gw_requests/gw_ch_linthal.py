@@ -20,45 +20,36 @@ def get_ev_info(ev_info,iex):
         ev_info.overwrite_ddir = 0  
 
         #RAW and ENZ files can be used when checking if you are receiving all the data ($PYSEP/check_getwaveform.bash)
-        ev_info.isave_raw = False
-        ev_info.isave_raw_processed = False
-        ev_info.isave_ENZ = False
+        ev_info.isave_raw = True
+        ev_info.isave_raw_processed = True
+        ev_info.isave_ENZ = True
 
         # EVENT INFO
-        #2021-02-24T10:05:57.024000Z -22.20764 63.91658 1.098 5.72
-        ev_info.otime = obspy.UTCDateTime("2021-02-24T10:05:57.024000Z")
-        ev_info.elon = -22.20764
-        ev_info.elat = 63.91658
-        ev_info.edep = 1098 
+        # Swiss seismo service 
+        # http://www.seismo.ethz.ch/earthquakes/switzerland/eventpage.html?originId=%27c21pOmNoLmV0aHouc2VkL3NjM2Evb3JpZ2luL05MTC4yMDE4MDEyMjE3MjgwMC43MTg0NDMuOTYxMzI=%27&date_ch=2017-03-06&time_ch=21:12:07&region=Linthal%20GL&magnitude=4.6
+        # 2017-03-06 20:12:07 lon 8.925 lat 46.907  depth 4.2 km
+        ev_info.otime = obspy.UTCDateTime("2017-03-06T20:12:07.4")
+        ev_info.elon =  8.925
+        ev_info.elat = 46.907
+        ev_info.edep = 4200
         ev_info.emag = 4.6
 
         ev_info.min_dist = 0
-        ev_info.max_dist = 2000
+        ev_info.max_dist = 1000
         ev_info.tbefore_sec = 100
-        ev_info.tafter_sec = 500
+        ev_info.tafter_sec = 2000
 
-        ev_info.channel = 'BH?'
+        ev_info.channel = 'BH?,HH?'
         ev_info.resample_TF = True
         ev_info.resample_freq = 20
         ev_info.scale_factor = 100
         #ev_info.phase_window = False
-
-        ##-----------------------------------------------------------
-        ## SPECFEM  (NB 2023-07-21: LEGACY. HOW DOES IT WORK.
-        ##-----------------------------------------------------------
+        #-------for specfem------------
         #ev_info.tbefore_sec = 0
         #ev_info.resample_TF = False
         #ev_info.scale_factor = 1
         #ev_info.outformat = 'DISP'
-        ##-----------------------------------------------------------
-
-        ##-----------------------------------------------------------
-        ## UIB-NORSAR REQUEST
-        ## 2023-07-21 needed since UIB etc no longer support MASS_DOWNLOADER.
-        ## USE GIT BRANCH: feature/imsdata, CONDA ENV: seismonpy_dev
-        ##-----------------------------------------------------------
-        #ev_info.client_name = "UIB-NORSAR" 
-        #ev_info.ifmass_downloader = False
+        #------------------------------
 
         ##-----------------------------------------------------------
         ## IMS REQUEST
@@ -76,7 +67,6 @@ def get_ev_info(ev_info,iex):
 
         ##-----------------------------------------------------------
         ## LOCAL DATA REPOSITORY, e.g. for data from Swedish Network
-        ## NOTE: currently set only for Kiruna and NW Russia events.
         ##-----------------------------------------------------------
         #ev_info.idb = 0
         #ev_info.ifmass_downloader = False

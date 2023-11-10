@@ -25,19 +25,21 @@ def get_ev_info(ev_info,iex):
         ev_info.isave_ENZ = False
 
         # EVENT INFO
-        #2021-02-24T10:05:57.024000Z -22.20764 63.91658 1.098 5.72
-        ev_info.otime = obspy.UTCDateTime("2021-02-24T10:05:57.024000Z")
-        ev_info.elon = -22.20764
-        ev_info.elat = 63.91658
-        ev_info.edep = 1098 
-        ev_info.emag = 4.6
+        # 2023-10-25 00:00:00.00
+        # 31.516667 N, 34.45 E  --  https://en.wikipedia.org/wiki/Gaza_City
+        #ev_info.otime = obspy.UTCDateTime("2023-10-25T00:00:00.000Z")  # before the conflict
+        ev_info.otime = obspy.UTCDateTime("2023-10-01T00:00:00.000Z")  
+        ev_info.elon = 34.45
+        ev_info.elat = 31.516667
+        ev_info.edep = 0 
+        ev_info.emag = -999
 
         ev_info.min_dist = 0
-        ev_info.max_dist = 2000
-        ev_info.tbefore_sec = 100
-        ev_info.tafter_sec = 500
+        ev_info.max_dist = 200
+        ev_info.tbefore_sec = 0
+        ev_info.tafter_sec = 60*60
 
-        ev_info.channel = 'BH?'
+        ev_info.channel = 'LH?,BH?,HH?'
         ev_info.resample_TF = True
         ev_info.resample_freq = 20
         ev_info.scale_factor = 100

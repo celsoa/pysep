@@ -26,18 +26,18 @@ def get_ev_info(ev_info,iex):
 
         # EVENT INFO
         #2021-02-24T10:05:57.024000Z -22.20764 63.91658 1.098 5.72
-        ev_info.otime = obspy.UTCDateTime("2021-02-24T10:05:57.024000Z")
-        ev_info.elon = -22.20764
-        ev_info.elat = 63.91658
-        ev_info.edep = 1098 
-        ev_info.emag = 4.6
+        ev_info.otime = obspy.UTCDateTime("2023-10-19T00:00:00.00Z")
+        ev_info.elon = 54.740
+        ev_info.elat = 73.385
+        ev_info.edep = 0
+        ev_info.emag = 5
 
         ev_info.min_dist = 0
-        ev_info.max_dist = 2000
+        ev_info.max_dist = 4000
         ev_info.tbefore_sec = 100
-        ev_info.tafter_sec = 500
+        ev_info.tafter_sec = 3600
 
-        ev_info.channel = 'BH?'
+        ev_info.channel = 'BH?,HH?'
         ev_info.resample_TF = True
         ev_info.resample_freq = 20
         ev_info.scale_factor = 100
@@ -60,19 +60,19 @@ def get_ev_info(ev_info,iex):
         #ev_info.client_name = "UIB-NORSAR" 
         #ev_info.ifmass_downloader = False
 
-        ##-----------------------------------------------------------
-        ## IMS REQUEST
-        ## Be sure to specify each IMS station. wildcard '*' is not implemented.
-        ##-----------------------------------------------------------
-        #ev_info.idb = 0
-        #ev_info.ifmass_downloader = False
-        #ev_info.client_name = 'IMS-SMP'
-        ##ev_info.station = 'FINES'
-        ##ev_info.station = 'I37NO'
-        #ev_info.channel = '*H*' # DEFAULT. be sure to include SH for IMS data (vertical sensors)
-        #                        # do not use '*' bc it finds BDF LDA data with no instrument response.
-        ##ev_info.channel = 'BH*,HH*,SH*,MH*' # 2022-09-12 doesnt' work.
-        #ev_info.icreateNull = 1 # NOTE USE. Else vertical-only stations will not be saved.
+        #-----------------------------------------------------------
+        # IMS REQUEST
+        # Be sure to specify each IMS station. wildcard '*' is not implemented.
+        #-----------------------------------------------------------
+        ev_info.idb = 0
+        ev_info.ifmass_downloader = False
+        ev_info.client_name = 'IMS-SMP'
+        #ev_info.station = 'FINES'
+        #ev_info.station = 'I37NO'
+        ev_info.channel = '*H*' # DEFAULT. be sure to include SH for IMS data (vertical sensors)
+                                # do not use '*' bc it finds BDF LDA data with no instrument response.
+        #ev_info.channel = 'BH*,HH*,SH*,MH*' # 2022-09-12 doesnt' work.
+        ev_info.icreateNull = 1 # NOTE USE. Else vertical-only stations will not be saved.
 
         ##-----------------------------------------------------------
         ## LOCAL DATA REPOSITORY, e.g. for data from Swedish Network

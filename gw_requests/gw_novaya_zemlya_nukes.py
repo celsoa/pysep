@@ -25,19 +25,20 @@ def get_ev_info(ev_info,iex):
         ev_info.isave_ENZ = False
 
         # EVENT INFO
-        #2021-02-24T10:05:57.024000Z -22.20764 63.91658 1.098 5.72
-        ev_info.otime = obspy.UTCDateTime("2021-02-24T10:05:57.024000Z")
-        ev_info.elon = -22.20764
-        ev_info.elat = 63.91658
-        ev_info.edep = 1098 
-        ev_info.emag = 4.6
+        # Last one (USGS): 1990-10-24T14:57:58.110000Z      54.707       73.361            0        5.7 | nuclear explosion None | Novaya Zemlya, Russia
+        # Last one (ISC):  1990-10-24T14:58:00.000000Z      54.7628      73.3264           0        5.7 | nuclear explosion IASPEI | Novaya Zemlya
+        ev_info.otime = obspy.UTCDateTime("1990-10-24T14:58:00.000000Z")
+        ev_info.elon = 54.7628
+        ev_info.elat = 73.3264
+        ev_info.edep = 0
+        ev_info.emag = 5.7
 
         ev_info.min_dist = 0
         ev_info.max_dist = 2000
         ev_info.tbefore_sec = 100
-        ev_info.tafter_sec = 500
+        ev_info.tafter_sec = 2000
 
-        ev_info.channel = 'BH?'
+        ev_info.channel = 'LH?,BH?,HH?'
         ev_info.resample_TF = True
         ev_info.resample_freq = 20
         ev_info.scale_factor = 100
@@ -52,13 +53,13 @@ def get_ev_info(ev_info,iex):
         #ev_info.outformat = 'DISP'
         ##-----------------------------------------------------------
 
-        ##-----------------------------------------------------------
-        ## UIB-NORSAR REQUEST
-        ## 2023-07-21 needed since UIB etc no longer support MASS_DOWNLOADER.
-        ## USE GIT BRANCH: feature/imsdata, CONDA ENV: seismonpy_dev
-        ##-----------------------------------------------------------
-        #ev_info.client_name = "UIB-NORSAR" 
-        #ev_info.ifmass_downloader = False
+        #-----------------------------------------------------------
+        # UIB-NORSAR REQUEST
+        # 2023-07-21 needed since UIB etc no longer support MASS_DOWNLOADER.
+        # USE GIT BRANCH: feature/imsdata, CONDA ENV: seismonpy_dev
+        #-----------------------------------------------------------
+        ev_info.client_name = "UIB-NORSAR" 
+        ev_info.ifmass_downloader = False
 
         ##-----------------------------------------------------------
         ## IMS REQUEST

@@ -25,19 +25,21 @@ def get_ev_info(ev_info,iex):
         ev_info.isave_ENZ = False
 
         # EVENT INFO
-        #2021-02-24T10:05:57.024000Z -22.20764 63.91658 1.098 5.72
-        ev_info.otime = obspy.UTCDateTime("2021-02-24T10:05:57.024000Z")
-        ev_info.elon = -22.20764
-        ev_info.elat = 63.91658
-        ev_info.edep = 1098 
-        ev_info.emag = 4.6
+        # News sources say it was near/next to the airport. 41.257861 N, 69.281186 E
+        # twitter videocam shows time: 2023-09-28, 02:52:15 (:7 ish)
+        # UTC time: 2023-09-27T09:52:00.00Z
+        ev_info.otime = obspy.UTCDateTime("2023-09-27T09:52:00.00Z")
+        ev_info.elon = 69.281186
+        ev_info.elat = 41.257861
+        ev_info.edep = 0
+        ev_info.emag = 0
 
         ev_info.min_dist = 0
-        ev_info.max_dist = 2000
+        ev_info.max_dist = 500
         ev_info.tbefore_sec = 100
-        ev_info.tafter_sec = 500
+        ev_info.tafter_sec = 1000
 
-        ev_info.channel = 'BH?'
+        ev_info.channel = 'BH?,HH?'
         ev_info.resample_TF = True
         ev_info.resample_freq = 20
         ev_info.scale_factor = 100

@@ -25,19 +25,21 @@ def get_ev_info(ev_info,iex):
         ev_info.isave_ENZ = False
 
         # EVENT INFO
-        #2021-02-24T10:05:57.024000Z -22.20764 63.91658 1.098 5.72
-        ev_info.otime = obspy.UTCDateTime("2021-02-24T10:05:57.024000Z")
-        ev_info.elon = -22.20764
-        ev_info.elat = 63.91658
-        ev_info.edep = 1098 
-        ev_info.emag = 4.6
+        # 2023-11-03 18:02:54.099 UTC 
+        # 28.848°N  82.187°E
+        # 16.5 km , Magnitude 5.7 mww 
+        ev_info.otime = obspy.UTCDateTime("2023-11-03T18:02:54.099")
+        ev_info.elon = 82.187
+        ev_info.elat = 28.848
+        ev_info.edep = 16500
+        ev_info.emag = 5.7
 
         ev_info.min_dist = 0
         ev_info.max_dist = 2000
         ev_info.tbefore_sec = 100
-        ev_info.tafter_sec = 500
+        ev_info.tafter_sec = 2000
 
-        ev_info.channel = 'BH?'
+        ev_info.channel = 'BH?,HH?'
         ev_info.resample_TF = True
         ev_info.resample_freq = 20
         ev_info.scale_factor = 100
@@ -61,18 +63,26 @@ def get_ev_info(ev_info,iex):
         #ev_info.ifmass_downloader = False
 
         ##-----------------------------------------------------------
-        ## IMS REQUEST
-        ## Be sure to specify each IMS station. wildcard '*' is not implemented.
+        ## RASPISHAKE
+        ## 2023-11-06 doesnt work --  obspy.clients.fdsn.header.FDSNNoDataException: No data available for request. HTTP Status code: 204
         ##-----------------------------------------------------------
-        #ev_info.idb = 0
+        #ev_info.client_name = 'RASPISHAKE'
+        #ev_info.network = 'AM'
         #ev_info.ifmass_downloader = False
-        #ev_info.client_name = 'IMS-SMP'
-        ##ev_info.station = 'FINES'
-        ##ev_info.station = 'I37NO'
-        #ev_info.channel = '*H*' # DEFAULT. be sure to include SH for IMS data (vertical sensors)
-        #                        # do not use '*' bc it finds BDF LDA data with no instrument response.
-        ##ev_info.channel = 'BH*,HH*,SH*,MH*' # 2022-09-12 doesnt' work.
-        #ev_info.icreateNull = 1 # NOTE USE. Else vertical-only stations will not be saved.
+
+        #-----------------------------------------------------------
+        # IMS REQUEST
+        # Be sure to specify each IMS station. wildcard '*' is not implemented.
+        #-----------------------------------------------------------
+        ev_info.idb = 0
+        ev_info.ifmass_downloader = False
+        ev_info.client_name = 'IMS-SMP'
+        #ev_info.station = 'FINES'
+        #ev_info.station = 'I37NO'
+        ev_info.channel = '*H*' # DEFAULT. be sure to include SH for IMS data (vertical sensors)
+                                # do not use '*' bc it finds BDF LDA data with no instrument response.
+        #ev_info.channel = 'BH*,HH*,SH*,MH*' # 2022-09-12 doesnt' work.
+        ev_info.icreateNull = 1 # NOTE USE. Else vertical-only stations will not be saved.
 
         ##-----------------------------------------------------------
         ## LOCAL DATA REPOSITORY, e.g. for data from Swedish Network

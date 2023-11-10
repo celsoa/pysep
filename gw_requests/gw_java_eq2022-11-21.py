@@ -25,45 +25,40 @@ def get_ev_info(ev_info,iex):
         ev_info.isave_ENZ = False
 
         # EVENT INFO
-        #2021-02-24T10:05:57.024000Z -22.20764 63.91658 1.098 5.72
-        ev_info.otime = obspy.UTCDateTime("2021-02-24T10:05:57.024000Z")
-        ev_info.elon = -22.20764
-        ev_info.elat = 63.91658
-        ev_info.edep = 1098 
-        ev_info.emag = 4.6
+        # USGS: 2022-11-21 06:21:10.003 UTC, 6.853 S 107.095 E, 10.0 km depth
+        # https://earthquake.usgs.gov/earthquakes/eventpage/us7000ir9t/origin/detail
+        #
+        # EMSC: 2022-11-21 06:21:11.0 UTC, 6.78 S 107.08 E, 10.0 Km (fixed)
+        # https://www.emsc-csem.org/Earthquake/earthquake.php?id=1191326#scientific
+        #
+        ev_info.otime = obspy.UTCDateTime("2022-11-21T06:21:10.003Z")
+        ev_info.elon = 107.095
+        ev_info.elat = -6.853
+        ev_info.edep = 10000
+        ev_info.emag = 5.6
 
         ev_info.min_dist = 0
+        ev_info.max_dist = 1000
+        ev_info.min_dist = 1501
         ev_info.max_dist = 2000
         ev_info.tbefore_sec = 100
-        ev_info.tafter_sec = 500
+        ev_info.tafter_sec = 1000
 
-        ev_info.channel = 'BH?'
+        ev_info.channel = 'BH?,HH?'
         ev_info.resample_TF = True
         ev_info.resample_freq = 20
         ev_info.scale_factor = 100
         #ev_info.phase_window = False
-
-        ##-----------------------------------------------------------
-        ## SPECFEM  (NB 2023-07-21: LEGACY. HOW DOES IT WORK.
-        ##-----------------------------------------------------------
+        #-------for specfem------------
         #ev_info.tbefore_sec = 0
         #ev_info.resample_TF = False
         #ev_info.scale_factor = 1
         #ev_info.outformat = 'DISP'
-        ##-----------------------------------------------------------
-
-        ##-----------------------------------------------------------
-        ## UIB-NORSAR REQUEST
-        ## 2023-07-21 needed since UIB etc no longer support MASS_DOWNLOADER.
-        ## USE GIT BRANCH: feature/imsdata, CONDA ENV: seismonpy_dev
-        ##-----------------------------------------------------------
-        #ev_info.client_name = "UIB-NORSAR" 
-        #ev_info.ifmass_downloader = False
+        #------------------------------
 
         ##-----------------------------------------------------------
         ## IMS REQUEST
         ## Be sure to specify each IMS station. wildcard '*' is not implemented.
-        ##-----------------------------------------------------------
         #ev_info.idb = 0
         #ev_info.ifmass_downloader = False
         #ev_info.client_name = 'IMS-SMP'
@@ -73,13 +68,7 @@ def get_ev_info(ev_info,iex):
         #                        # do not use '*' bc it finds BDF LDA data with no instrument response.
         ##ev_info.channel = 'BH*,HH*,SH*,MH*' # 2022-09-12 doesnt' work.
         #ev_info.icreateNull = 1 # NOTE USE. Else vertical-only stations will not be saved.
+        ##-----------------------------------------------------------
 
-        ##-----------------------------------------------------------
-        ## LOCAL DATA REPOSITORY, e.g. for data from Swedish Network
-        ## NOTE: currently set only for Kiruna and NW Russia events.
-        ##-----------------------------------------------------------
-        #ev_info.idb = 0
-        #ev_info.ifmass_downloader = False
-        #ev_info.client_name = 'local'
 
     return(ev_info)
